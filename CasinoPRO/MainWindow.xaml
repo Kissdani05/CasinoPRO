@@ -24,20 +24,22 @@
 
             <!-- Balance -->
             <Label Content="Balance: " DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="20,0,5,0"/>
-            <TextBlock Text="10000 HUF" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0"/>
+            <Label x:Name="BalanceTxt"  DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0"/>
 
             <!-- Befizetés gomb -->
             <Button Content="Befizetés" DockPanel.Dock="Right" Width="100" Margin="10,0" VerticalAlignment="Center"/>
         </DockPanel>
 
         <!-- Oldalsáv, alapból rejtve -->
-        <StackPanel Name="UserSidebar" Background="LightGray" Width="200" HorizontalAlignment="Left" Visibility="Collapsed" Panel.ZIndex="1">
-            <Button Content="Eddigi fogadásaim" Margin="10" Click="EddigiFogadasaim_Click"/>
-            <Button Content="Adataim" Margin="10" Click="AdataimButton_Click" />
-            <Button Content="Befizetés" Margin="10" />
-            <Button Content="Kifizetés" Margin="10" />
-            <Button Content="Kijelentkezés" Margin="10" Click="LogoutButton_Click"/>
-        </StackPanel>
+        <Grid x:Name="UserSidebar" Visibility="Collapsed" Background="LightGray" Width="200" Grid.RowSpan="2" Panel.ZIndex="1" HorizontalAlignment="Left">
+            <StackPanel>
+                <Button Content="Eddigi fogadásaim" Width="180" Margin="10" Click="EddigiFogadasaim_Click"/>
+                <Button Content="Adataim" Width="180" Margin="10" Click="AdataimButton_Click"/>
+                <Button Content="Befizetés" Width="180" Margin="10"/>
+                <Button Content="Kifizetés" Width="180" Margin="10"/>
+                <Button Content="Kijelentkezés" Width="180" Margin="10" Click="LogoutButton_Click"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Sportok gombok sáv -->
         
@@ -66,12 +68,46 @@
 
                 <!-- Foci mérkőzés fogadási opciók -->
             </StackPanel>
-                <StackPanel Name="OptionalBets" Orientation="Horizontal" Height="50" VerticalAlignment="Top" Grid.Row="1" Background="DarkGray" Margin="10,10,10,0" >
-                    <TextBlock Text="Foci: Real Madrid vs Barcelona" FontSize="16" VerticalAlignment="Center" Margin="10,10,10,10" Grid.Row="1"/>
-                    <Button Content="Hazai" Width="70" Margin="10,0" VerticalAlignment="Center" Click="BetOption_Click"/>
-                    <Button Content="Döntetlen" Width="70" Margin="10,0" VerticalAlignment="Center" Click="BetOption_Click"/>
-                    <Button Content="Vendég" Width="70" Margin="10,0" VerticalAlignment="Center" Click="BetOption_Click"/>
+            <StackPanel x:Name="OptionalBets" Orientation="Vertical" Visibility="Visible" Grid.Row="1" Margin="10">
+                <TextBlock Text="Fogadási lehetőségek" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
+
+                <!-- Foci meccsek fogadási lehetőségei -->
+                <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                    <TextBlock Text="Real Madrid vs Barcelona" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <Button Content="Real Madrid nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Barcelona nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
+                    </StackPanel>
                 </StackPanel>
+
+                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
+                    <TextBlock Text="Liverpool vs Manchester United" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <Button Content="Liverpool nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Manchester United nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
+                    <TextBlock Text="Juventus vs AC Milan" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <Button Content="Juventus nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="AC Milan nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
+                    <TextBlock Text="Bayern München vs Borussia Dortmund" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                        <Button Content="Bayern München nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Borussia Dortmund nyer" Width="150" Margin="5" Click="BetOption_Click"/>
+                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
 
             <!-- Jobb oldal: Élő fogadási lehetőségek -->
             <StackPanel Name="LiveBetsPanel" Grid.Column="1" Margin="20" Grid.Row="1">
@@ -84,5 +120,6 @@
             <TextBox Name="BetAmount" Width="100" Height="25" Margin="10" PreviewTextInput="BetAmount_PreviewTextInput"/>
             <Button Content="Fogadás véglegesítése" Width="150" Margin="10" Click="FinalizeBet_Click"/>
         </StackPanel>
+        
     </Grid>
 </Window>

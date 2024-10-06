@@ -17,10 +17,12 @@ namespace CasinoPRO
     public partial class MainWindow : Window
     {
         private List<string> finalizedBets = new List<string>();
-        
+        private double balance = 0;
         public MainWindow()
         {
             InitializeComponent();
+            this.PreviewMouseDown += MainWindow_PreviewMouseDown;
+                       
         }
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
@@ -41,6 +43,7 @@ namespace CasinoPRO
         TextBox usernameTextBox;
         TextBox emailTextBox;
         Button saveButton;
+        Button editButton;
 
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
@@ -79,7 +82,7 @@ namespace CasinoPRO
             infoPanel.Children.Add(emailText);
 
             // Módosítás gomb
-            Button editButton = new Button
+            editButton = new Button
             {
                 Content = "Módosítás",
                 Width = 100,
@@ -117,7 +120,6 @@ namespace CasinoPRO
         // Módosítás gomb eseménykezelője
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
-            // Átalakítjuk a TextBlock-okat TextBox-okra
             usernameTextBox = new TextBox
             {
                 Text = "asdasd", // Az aktuális felhasználónév
@@ -139,15 +141,14 @@ namespace CasinoPRO
             parentPanel.Children.Insert(1, usernameTextBox);
             parentPanel.Children.Insert(2, emailTextBox);
 
-            // Megjelenítjük a mentés gombot
-            this.Visibility = Visibility.Collapsed;
+            // Elrejtjük a Módosítás gombot és megjelenítjük a Mentés gombot
+            editButton.Visibility = Visibility.Collapsed;
             saveButton.Visibility = Visibility.Visible;
         }
 
         // Mentés gomb eseménykezelője
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Az új értékek mentése
             string newUsername = usernameTextBox.Text;
             string newEmail = emailTextBox.Text;
 
@@ -161,9 +162,10 @@ namespace CasinoPRO
 
             parentPanel.Children.Insert(1, usernameText);
             parentPanel.Children.Insert(2, emailText);
-            
-            // A mentés gomb elrejtése
+
+            // A mentés gomb elrejtése és a módosítás gomb megjelenítése
             saveButton.Visibility = Visibility.Collapsed;
+            editButton.Visibility = Visibility.Visible;
         }
 
         // Felhasználói ikonra kattintás esemény
@@ -178,6 +180,24 @@ namespace CasinoPRO
             {
                 UserSidebar.Visibility = Visibility.Collapsed;
             }
+        }
+        private void MainWindow_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Ha a kattintás nem az oldalsó sávon történik, rejtse el azt
+            if (UserSidebar.Visibility == Visibility.Visible)
+            {
+                // Ellenőrizzük, hogy a kattintás az oldalsó sávon kívül történt-e
+                if (!IsMouseOverSidebar(e))
+                {
+                    UserSidebar.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+        private bool IsMouseOverSidebar(MouseButtonEventArgs e)
+        {
+            var mousePos = e.GetPosition(UserSidebar);
+            return (mousePos.X >= 0 && mousePos.X <= UserSidebar.ActualWidth &&
+                    mousePos.Y >= 0 && mousePos.Y <= UserSidebar.ActualHeight);
         }
 
         // Kijelentkezés logikája
@@ -320,9 +340,7 @@ namespace CasinoPRO
                 }
             }
         }
-
-    
-
+        
 
 
 
@@ -330,8 +348,10 @@ namespace CasinoPRO
 
 
 
-    // Gombok létrehozása a fogadási lehetőségekhez
-    private Button CreateBetButton(string content)
+
+
+        // Gombok létrehozása a fogadási lehetőségekhez
+        private Button CreateBetButton(string content)
         {
             return new Button
             {
