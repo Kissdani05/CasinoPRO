@@ -27,10 +27,39 @@
             <Label x:Name="BalanceTxt"  DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0" Content="0 HUF"/>
 
             <!-- Befizetés gomb -->
-            <Button Content="Befizetés" DockPanel.Dock="Right" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
-
+            <Button Content="Befizetés" DockPanel.Dock="Left" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
+            <Button Name="CartButton" VerticalAlignment="Center" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="10, 0" Click="CartButton_Click">
+                <Label Content="CART" Width="50" Height="30"/>
+            </Button>
         </DockPanel>
+        <!-- Overlay that covers the entire window, initially hidden -->
+        <!-- Overlay that covers the entire window, initially hidden -->
+        <Border Name="RightSidebarOverlay" Background="Transparent" Visibility="Collapsed" MouseDown="RightSidebarOverlay_MouseDown"/>
 
+        <!-- Right Sidebar (hidden by default) -->
+        <Border Name="RightSidebar" Background="LightGray" Width="300" Panel.ZIndex="1" HorizontalAlignment="Right" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock Text="Your Bet Cart" FontSize="20" FontWeight="Bold" Margin="10"/>
+
+                <!-- Dynamically display bets using ItemsControl -->
+                <ItemsControl Name="CartItemsControl" ItemsSource="{Binding Bets}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="10">
+                                <!-- Team Name -->
+                                <TextBlock Text="{Binding TeamName}" Width="100"/>
+
+                                <!-- Bet Amount Input -->
+                                <TextBox Width="50" Text="{Binding BetAmount, UpdateSourceTrigger=PropertyChanged}" Margin="5"/>
+
+                                <!-- Finalize Bet Button -->
+                                <Button Content="Finalize" Width="60" Margin="5" Command="{Binding DataContext.FinalizeBetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
         <!-- Oldalsáv, alapból rejtve -->
         <Grid x:Name="UserSidebar" Visibility="Collapsed" Background="LightGray" Width="200" Grid.RowSpan="2" Panel.ZIndex="1" HorizontalAlignment="Left">
             <StackPanel>
@@ -118,11 +147,18 @@
                 <TextBlock Text="Fogadási opciók: Admin felület által szerkeszthető" FontSize="14" Margin="0,10,0,10"/>
             </StackPanel>
         </Grid>
-        <StackPanel Name="BetCart" Background="LightGray" Width="200" Height="150" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Visibility="Collapsed">
-            <TextBlock Name="SelectedBetText" Text="Választott fogadás:" FontWeight="Bold" Margin="10"/>
-            <TextBox Name="BetAmount" Width="100" Height="25" Margin="10" PreviewTextInput="BetAmount_PreviewTextInput"/>
-            <Button Content="Fogadás véglegesítése" Width="150" Margin="10" Click="FinalizeBet_Click"/>
-        </StackPanel>
+        <ItemsControl Name="BetCart" Grid.Row="1">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding TeamName}" Width="100"/>
+                        <TextBox Text="{Binding BetAmount, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                        <Button Content="Finalize Bet"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
         <StackPanel Name="DepositPanel" Background="LightGray" Width="300" Height="200" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
             <TextBlock Text="Adja meg a befizetni kívánt összeget:" FontWeight="Bold" Margin="10" />
             <TextBox Name="DepositAmount" Width="200" Height="30" Margin="10" PreviewTextInput="DepositAmount_PreviewTextInput" />

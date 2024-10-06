@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,13 +17,22 @@ namespace CasinoPRO
     /// </summary>
     public partial class MainWindow : Window
     {
+        public class BetCartItem
+        {
+            public string TeamName { get; set; }
+            public double BetAmount { get; set; }
+        }
+        public ICommand FinalizeBetCommand { get; set; }
         private List<string> finalizedBets = new List<string>();
         private double balance = 0;
+        public ObservableCollection<BetCartItem> Bets { get; set; }
         public MainWindow()
         {
             InitializeComponent();
             this.PreviewMouseDown += MainWindow_PreviewMouseDown;
-                       
+            Bets = new ObservableCollection<BetCartItem>(); 
+            CartItemsControl.ItemsSource = Bets;
+            FinalizeBetCommand = new RelayCommand(FinalizeBet);
         }
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
@@ -208,19 +218,31 @@ namespace CasinoPRO
             UserIcon.Visibility = Visibility.Collapsed; // Ikon elrejtése
             LoginButton.Visibility = Visibility.Visible; // Bejelentkezés gomb megjelenítése
         }
-        
+        private void CartButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Show the sidebar and overlay
+            RightSidebar.Visibility = Visibility.Visible;
+            RightSidebarOverlay.Visibility = Visibility.Visible;
+        }
+
+        // This method handles clicking outside the sidebar (on the overlay)
+        private void RightSidebarOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Hide the sidebar and overlay when clicked outside
+            RightSidebar.Visibility = Visibility.Collapsed;
+            RightSidebarOverlay.Visibility = Visibility.Collapsed;
+        }
+
+
         // Fogadási lehetőségre kattintás esemény
         private void BetOption_Click(object sender, RoutedEventArgs e)
         {
-            Button clickedButton = sender as Button;
-
-            if (clickedButton != null)
+            var button = sender as Button;
+            if (button != null)
             {
-                // Beállítjuk a kiválasztott fogadást
-                SelectedBetText.Text = $"Választott fogadás: {clickedButton.Content}";
-
-                // Megjelenítjük a kosarat
-                BetCart.Visibility = Visibility.Visible;
+                // Use button content (team name) to add a bet
+                string teamName = button.Content.ToString();
+                OnTeamSelected(teamName); // Call the method to add the selected bet
             }
         }
 
@@ -229,25 +251,39 @@ namespace CasinoPRO
         {
             e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
         }
+        private void OnTeamSelected(string teamName)
+        {
+            var existingBet = Bets.FirstOrDefault(b => b.TeamName == teamName);
+            if (existingBet == null)
+            {
+                var betItem = new BetCartItem
+                {
+                    TeamName = teamName,
+                    BetAmount = 0 // Default value
+                };
+                Bets.Add(betItem);
+            }
+        }
+        private void FinalizeBet(object bet)
+        {
+            var betItem = bet as BetCartItem;
+            if (betItem != null)
+            {
+                // Finalize the bet (e.g., save to database or show a message)
+                MessageBox.Show($"Bet on {betItem.TeamName} finalized with amount: {betItem.BetAmount}");
+
+                // Remove the bet from the list after finalization
+                Bets.Remove(betItem);
+            }
+        }
 
         // Fogadás véglegesítése
-        private void FinalizeBet_Click(object sender, RoutedEventArgs e)
+        private void FinalizeAllBets_Click(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(BetAmount.Text, out int betAmount) && betAmount > 0)
+            if (Bets.Count > 0)
             {
-                // Mentjük a véglegesített fogadást
-                string finalizedBet = $"{SelectedBetText.Text}, Összeg: {betAmount} HUF";
-                finalizedBets.Add(finalizedBet);
-
-                MessageBox.Show($"Sikeres fogadás: {SelectedBetText.Text}, Összeg: {betAmount} HUF");
-
-                // Kosár elrejtése a véglegesítés után
-                BetCart.Visibility = Visibility.Collapsed;
-                BetAmount.Clear(); // Beviteli mező törlése
-            }
-            else
-            {
-                MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
+                MessageBox.Show("All bets finalized.");
+                Bets.Clear(); // Remove all bets
             }
         }
 
