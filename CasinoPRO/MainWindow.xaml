@@ -24,10 +24,11 @@
 
             <!-- Balance -->
             <Label Content="Balance: " DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="20,0,5,0"/>
-            <Label x:Name="BalanceTxt"  DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0"/>
+            <Label x:Name="BalanceTxt"  DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0" Content="0 HUF"/>
 
             <!-- Befizetés gomb -->
-            <Button Content="Befizetés" DockPanel.Dock="Right" Width="100" Margin="10,0" VerticalAlignment="Center"/>
+            <Button Content="Befizetés" DockPanel.Dock="Right" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
+
         </DockPanel>
 
         <!-- Oldalsáv, alapból rejtve -->
@@ -35,8 +36,10 @@
             <StackPanel>
                 <Button Content="Eddigi fogadásaim" Width="180" Margin="10" Click="EddigiFogadasaim_Click"/>
                 <Button Content="Adataim" Width="180" Margin="10" Click="AdataimButton_Click"/>
-                <Button Content="Befizetés" Width="180" Margin="10"/>
-                <Button Content="Kifizetés" Width="180" Margin="10"/>
+                <Button Content="Befizetés" DockPanel.Dock="Right" Width="180" Margin="10" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
+
+                <Button Content="Kifizetés" Width="180" Margin="10" Click="KifizetesButton_Click"/>
+
                 <Button Content="Kijelentkezés" Width="180" Margin="10" Click="LogoutButton_Click"/>
             </StackPanel>
         </Grid>
@@ -120,6 +123,11 @@
             <TextBox Name="BetAmount" Width="100" Height="25" Margin="10" PreviewTextInput="BetAmount_PreviewTextInput"/>
             <Button Content="Fogadás véglegesítése" Width="150" Margin="10" Click="FinalizeBet_Click"/>
         </StackPanel>
-        
+        <StackPanel Name="DepositPanel" Background="LightGray" Width="300" Height="200" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+            <TextBlock Text="Adja meg a befizetni kívánt összeget:" FontWeight="Bold" Margin="10" />
+            <TextBox Name="DepositAmount" Width="200" Height="30" Margin="10" PreviewTextInput="DepositAmount_PreviewTextInput" />
+            <Button Content="Befizetés" Width="100" Margin="10" Click="ConfirmDeposit_Click"/>
+            <Button Content="Vissza" Width="100" Margin="10" Click="BackFromDeposit_Click"/>
+        </StackPanel>
     </Grid>
 </Window>

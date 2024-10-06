@@ -340,9 +340,127 @@ namespace CasinoPRO
                 }
             }
         }
-        
 
+        private void ShowDepositPanel_Click(object sender, RoutedEventArgs e)
+        {
+            // Rejtsd el a fő tartalmat
+            BetOptionsPanel.Visibility = Visibility.Collapsed;
+            LiveBetsPanel.Visibility = Visibility.Collapsed;
+            OptionalBets.Visibility = Visibility.Collapsed;
+            UserSidebar.Visibility = Visibility.Collapsed;
 
+            // Mutasd a befizetési panelt
+            DepositPanel.Visibility = Visibility.Visible;
+        }
+        private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
+        {
+            // Rejtsd el a befizetési panelt
+            DepositPanel.Visibility = Visibility.Collapsed;
+
+            // Visszaállítod a fő UI elemeket
+            BetOptionsPanel.Visibility = Visibility.Visible;
+            LiveBetsPanel.Visibility = Visibility.Visible;
+            OptionalBets.Visibility = Visibility.Visible;
+        }
+
+        private void ConfirmDeposit_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(DepositAmount.Text, out int depositAmount) && depositAmount > 0)
+            {
+                // Befizetési összeg hozzáadása a balance-hoz
+                balance += depositAmount;
+
+                // Frissítjük a balance kijelzését
+                BalanceTxt.Content = balance.ToString("")+" HUF";
+
+                MessageBox.Show($"Sikeresen befizetett {depositAmount} HUF");
+
+                // Rejtsd el a befizetési panelt és térj vissza a fő UI-hoz
+                DepositPanel.Visibility = Visibility.Collapsed;
+                BetOptionsPanel.Visibility = Visibility.Visible;
+                LiveBetsPanel.Visibility = Visibility.Visible;
+                OptionalBets.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
+            }
+        }
+        private void DepositAmount_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
+        }
+        private void KifizetesButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Hide other panels
+            BetOptionsPanel.Visibility = Visibility.Collapsed;
+            LiveBetsPanel.Visibility = Visibility.Collapsed;
+            OptionalBets.Visibility = Visibility.Collapsed;
+            UserSidebar.Visibility = Visibility.Collapsed;
+
+            // Create a StackPanel for withdrawal inputs
+            StackPanel kifizetesPanel = new StackPanel() { Margin = new Thickness(50) };
+            TextBlock header = new TextBlock
+            {
+                Text = "Kifizetés",
+                FontWeight = FontWeights.Bold,
+                FontSize = 18,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            kifizetesPanel.Children.Add(header);
+
+            // Create the input field for amount (numeric input only)
+            TextBox kifizetesAmountBox = new TextBox
+            {
+                Width = 150,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
+            kifizetesAmountBox.PreviewTextInput += BetAmount_PreviewTextInput; // Csak számokat fogadjon el
+            kifizetesPanel.Children.Add(kifizetesAmountBox);
+
+            // "Kifizetés" gomb
+            Button kifizetesButton = new Button
+            {
+                Content = "Kifizetés",
+                Width = 100,
+                Margin = new Thickness(0, 20, 0, 0)
+            };
+            kifizetesButton.Click += (s, args) =>
+            {
+                if (double.TryParse(kifizetesAmountBox.Text, out double kifizetesAmount) && kifizetesAmount > 0)
+                {
+                    if (balance >= kifizetesAmount)
+                    {
+                        balance -= kifizetesAmount; // Levonjuk az összeget az egyenlegből
+                        BalanceTxt.Content = $"{balance} HUF"; // Frissítjük a felhasználói egyenleget a UI-ban
+                        MessageBox.Show($"Sikeres kifizetés: {kifizetesAmount} HUF");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Nincs elegendő egyenleg.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
+                }
+            };
+            kifizetesPanel.Children.Add(kifizetesButton);
+
+            // "Vissza" gomb
+            Button backButton = new Button
+            {
+                Content = "Vissza",
+                Width = 100,
+                Margin = new Thickness(0, 20, 0, 0)
+            };
+            backButton.Click += BackButton_Click; // Visszatérés a főoldalra
+            kifizetesPanel.Children.Add(backButton);
+
+            // Add the panel to the main grid
+            Grid mainGrid = this.Content as Grid;
+            mainGrid.Children.Add(kifizetesPanel);
+        }
 
 
 
