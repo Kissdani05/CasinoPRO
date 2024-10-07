@@ -22,6 +22,7 @@ namespace CasinoPRO
             public string TeamName { get; set; }
             public double BetAmount { get; set; }
         }
+        private bool isLoggedIn = false;
         public ICommand FinalizeBetCommand { get; set; }
         private List<string> finalizedBets = new List<string>();
         private double balance = 0;
@@ -38,13 +39,23 @@ namespace CasinoPRO
         {
             LoginPage loginPage = new LoginPage();
             loginPage.ShowDialog();
+            isLoggedIn = true;
             // Felhasználó sikeresen bejelentkezett (példa)
-            bool loginSuccess = true;
+            if (isLoggedIn = true) {
+                Bejelentkezes();
+            }
+            
+        }
 
-            if (loginSuccess)
+       
+
+        private void Bejelentkezes()
+        {
+            if (isLoggedIn = true)
             {
                 LoginButton.Visibility = Visibility.Collapsed; // Rejtse el a bejelentkezés gombot
-                UserIcon.Visibility = Visibility.Visible; // Mutassa meg a felhasználói ikont
+                UserIcon.Visibility = Visibility.Visible;
+                // Mutassa meg a felhasználói ikont
             }
         }
         // Globális változók létrehozása a TextBlock-ok és TextBox-okhoz
@@ -216,7 +227,8 @@ namespace CasinoPRO
             // Kijelentkezés művelet
             UserSidebar.Visibility = Visibility.Collapsed; // Oldalsáv elrejtése
             UserIcon.Visibility = Visibility.Collapsed; // Ikon elrejtése
-            LoginButton.Visibility = Visibility.Visible; // Bejelentkezés gomb megjelenítése
+            LoginButton.Visibility = Visibility.Visible;
+            isLoggedIn = false;// Bejelentkezés gomb megjelenítése
         }
         private void CartButton_Click(object sender, RoutedEventArgs e)
         {
@@ -237,12 +249,24 @@ namespace CasinoPRO
         // Fogadási lehetőségre kattintás esemény
         private void BetOption_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            if (button != null)
+            
+            if (!isLoggedIn)
             {
-                // Use button content (team name) to add a bet
-                string teamName = button.Content.ToString();
-                OnTeamSelected(teamName); // Call the method to add the selected bet
+                MessageBox.Show("A fogadáshoz be kell jelentkeznie.");
+                LoginPage loginPage = new LoginPage();
+                loginPage.ShowDialog(); // Átirányít a bejelentkezési felületre
+                isLoggedIn = true;
+                Bejelentkezes();
+                return;
+            }
+            else {
+                var button = sender as Button;
+                if (button != null)
+                {
+                    // Use button content (team name) to add a bet
+                    string teamName = button.Content.ToString();
+                    OnTeamSelected(teamName); // Call the method to add the selected bet
+                }
             }
         }
 
@@ -266,6 +290,7 @@ namespace CasinoPRO
         }
         private void FinalizeBet(object bet)
         {
+            
             var betItem = bet as BetCartItem;
             if (betItem != null)
             {
@@ -278,14 +303,7 @@ namespace CasinoPRO
         }
 
         // Fogadás véglegesítése
-        private void FinalizeAllBets_Click(object sender, RoutedEventArgs e)
-        {
-            if (Bets.Count > 0)
-            {
-                MessageBox.Show("All bets finalized.");
-                Bets.Clear(); // Remove all bets
-            }
-        }
+        
 
         // Eddigi fogadások megjelenítése
         private void EddigiFogadasaim_Click(object sender, RoutedEventArgs e)
@@ -379,14 +397,26 @@ namespace CasinoPRO
 
         private void ShowDepositPanel_Click(object sender, RoutedEventArgs e)
         {
-            // Rejtsd el a fő tartalmat
+            if (isLoggedIn == true)
+            {
             BetOptionsPanel.Visibility = Visibility.Collapsed;
             LiveBetsPanel.Visibility = Visibility.Collapsed;
             OptionalBets.Visibility = Visibility.Collapsed;
             UserSidebar.Visibility = Visibility.Collapsed;
-
-            // Mutasd a befizetési panelt
             DepositPanel.Visibility = Visibility.Visible;
+
+            }
+            else
+            {
+                MessageBox.Show("A fogadáshoz be kell jelentkeznie.");
+                LoginPage loginPage = new LoginPage();
+                loginPage.ShowDialog(); // Átirányít a bejelentkezési felületre
+                isLoggedIn = true;
+                Bejelentkezes();
+                return;
+            }
+            // Rejtsd el a fő tartalmat
+            // Mutasd a befizetési panelt
         }
         private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
         {
@@ -497,11 +527,6 @@ namespace CasinoPRO
             Grid mainGrid = this.Content as Grid;
             mainGrid.Children.Add(kifizetesPanel);
         }
-
-
-
-
-
 
 
         // Gombok létrehozása a fogadási lehetőségekhez
