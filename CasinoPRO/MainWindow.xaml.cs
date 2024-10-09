@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using MySql.Data.MySqlClient;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,7 +32,7 @@ namespace CasinoPRO
         {
             InitializeComponent();
             this.PreviewMouseDown += MainWindow_PreviewMouseDown;
-            Bets = new ObservableCollection<BetCartItem>(); 
+            Bets = new ObservableCollection<BetCartItem>();
             CartItemsControl.ItemsSource = Bets;
             FinalizeBetCommand = new RelayCommand(FinalizeBet);
         }
@@ -41,17 +42,17 @@ namespace CasinoPRO
             loginPage.ShowDialog();
             isLoggedIn = true;
             // Felhasználó sikeresen bejelentkezett (példa)
-            if (isLoggedIn = true) {
+            if (isLoggedIn == true) {
                 Bejelentkezes();
             }
-            
+
         }
 
-       
+
 
         private void Bejelentkezes()
         {
-            if (isLoggedIn = true)
+            if (isLoggedIn == true)
             {
                 LoginButton.Visibility = Visibility.Collapsed; // Rejtse el a bejelentkezés gombot
                 UserIcon.Visibility = Visibility.Visible;
@@ -68,6 +69,48 @@ namespace CasinoPRO
 
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
+            MySqlConnection conn = null;
+            string userName = null; // This will store the fetched username
+            string userEmail = null; // This will store the fetched email
+            string loggedInUsername = SessionManager.LoggedInUsername;
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Query to fetch user data (replace with your actual query)
+                    string query = "SELECT Username, Email FROM Bettors WHERE Username = @username";  // Assuming 'Username' is unique
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    // Assuming you have stored the username of the logged-in user  // Replace with actual logic for fetching current username
+                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                    // Execute the query and read data
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Assign the values from the database to userName and userEmail
+                            userName = reader["Username"].ToString();
+                            userEmail = reader["Email"].ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error fetching user data: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+            }
+
             // Hide other panels
             BetOptionsPanel.Visibility = Visibility.Collapsed;
             LiveBetsPanel.Visibility = Visibility.Collapsed;
@@ -75,7 +118,7 @@ namespace CasinoPRO
             UserSidebar.Visibility = Visibility.Collapsed;
 
             // Display user information
-            StackPanel infoPanel = new StackPanel() { Margin = new Thickness(50), };
+            StackPanel infoPanel = new StackPanel() { Margin = new Thickness(50) };
             TextBlock header = new TextBlock
             {
                 Text = "Adataim",
@@ -84,25 +127,23 @@ namespace CasinoPRO
                 Margin = new Thickness(0, 0, 0, 10)
             };
             infoPanel.Children.Add(header);
-            string tesztFelh = "asdasd";
-            string tesztEmail = "asd@gmail.com";
 
-            // Eredeti TextBlock elemek létrehozása
+            // Display the fetched username and email
             usernameText = new TextBlock
             {
-                Text = $"Felhasználónév: {tesztFelh}",
+                Text = $"Felhasználónév: {userName}", // Use the value from the database
                 Margin = new Thickness(0, 5, 0, 5)
             };
             infoPanel.Children.Add(usernameText);
 
             emailText = new TextBlock
             {
-                Text = $"E-mail cím: {tesztEmail}",
+                Text = $"E-mail cím: {userEmail}", // Use the value from the database
                 Margin = new Thickness(0, 5, 0, 5)
             };
             infoPanel.Children.Add(emailText);
 
-            // Módosítás gomb
+            // Edit button
             editButton = new Button
             {
                 Content = "Módosítás",
@@ -112,13 +153,13 @@ namespace CasinoPRO
             editButton.Click += EditButton_Click;
             infoPanel.Children.Add(editButton);
 
-            // Mentés gomb (kezdetben rejtve)
+            // Save button (initially hidden)
             saveButton = new Button
             {
                 Content = "Mentés",
                 Width = 100,
                 Margin = new Thickness(0, 20, 0, 0),
-                Visibility = Visibility.Collapsed // Elrejtve
+                Visibility = Visibility.Collapsed // Initially hidden
             };
             saveButton.Click += SaveButton_Click;
             infoPanel.Children.Add(saveButton);
@@ -138,8 +179,8 @@ namespace CasinoPRO
             mainGrid.Children.Add(infoPanel);
         }
 
-        // Módosítás gomb eseménykezelője
-        private void EditButton_Click(object sender, RoutedEventArgs e)
+            // Módosítás gomb eseménykezelője
+            private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             usernameTextBox = new TextBox
             {

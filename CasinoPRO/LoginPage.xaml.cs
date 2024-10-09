@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Windows;
 
 namespace CasinoPRO
@@ -6,28 +7,96 @@ namespace CasinoPRO
     public partial class LoginPage : Window
     {
         private string registeredUsername = string.Empty;
-
+        private DatabaseConnection dbContext;
         public LoginPage()
         {
             InitializeComponent();
+            dbContext = new DatabaseConnection();
+        }
+
+        public bool ValidateLogin(string username, string password)
+        {
+            bool isValid = false;
+            MySqlConnection conn = null;
+
+            try
+            {
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT PasswordHash FROM Bettors WHERE Username = @username AND IsActive = 1";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    string storedHash = null;
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            storedHash = reader["PasswordHash"].ToString();
+                        }
+                    }
+
+                    if (storedHash != null && BCrypt.Net.BCrypt.Verify(password, storedHash))
+                    {
+                        isValid = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error during login validation: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    dbContext.CloseConnection();
+                }
+            }
+
+            return isValid;
         }
 
         // Bejelentkezés gomb eseménykezelő
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {
-            string email = RegisterEmailTextBox.Text;
+
             string username = UsernameTextBox.Text;
             string password = PasswordTextBox.Password;
 
-            if (username == registeredUsername && password == "password")
+            // Call ValidateLogin to check if the login is valid
+            bool isValid = ValidateLogin(username, password);
+
+            if (isValid)
             {
-                MessageBox.Show("Sikeres bejelentkezés!");
-                this.Close();
+                // If login is successful, show success message
+                SessionManager.LoggedInUsername = username;
+                MessageBox.Show("Login successful!");
+
+                // Perform any additional actions, like navigating to a different page or closing the login window
+                this.Close();  // For example, close the login window
             }
             else
             {
-                MessageBox.Show("Hibás felhasználónév vagy jelszó!");
+                // If login fails, show failure message
+                MessageBox.Show("Invalid username or password. Please try again.");
             }
+
+            //string email = RegisterEmailTextBox.Text;
+            //string username = UsernameTextBox.Text;
+            //string password = PasswordTextBox.Password;
+
+            //if (username == registeredUsername && password == "password")
+            //{
+            //    MessageBox.Show("Sikeres bejelentkezés!");
+            //    this.Close();
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Hibás felhasználónév vagy jelszó!");
+            //}
         }
 
         // Elfelejtett jelszó link eseménykezelő
@@ -50,39 +119,74 @@ namespace CasinoPRO
         }
 
         // Regisztráció gomb eseménykezelő
+        public void RegisterUser(string username, string email, string password)
+        {
+            bool isRegistered = false;
+            MySqlConnection conn = null;
+
+            try
+            {
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "INSERT INTO Bettors (Username, Email, PasswordHash, IsActive) VALUES (@username, @Email, @PasswordHash, 1)";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.Parameters.AddWithValue("@PasswordHash", BCrypt.Net.BCrypt.HashPassword(password));
+
+                    int result = cmd.ExecuteNonQuery();
+                    isRegistered = result > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error during registration: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    dbContext.CloseConnection();
+                }
+            }
+            if (isRegistered)
+            {
+                MessageBox.Show("Registration successful!");
+            }
+            else
+            {
+                MessageBox.Show("Registration failed.");
+            }
+        }
+
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
+            // Get input values from the UI
             string username = RegisterUsernameTextBox.Text;
             string email = RegisterEmailTextBox.Text;
             string confirmEmail = ConfirmEmailTextBox.Text;
             string password = RegisterPasswordTextBox.Password;
             string confirmPassword = ConfirmPasswordTextBox.Password;
 
+            // Perform basic validation on the input
             if (email != confirmEmail)
             {
-                MessageBox.Show("Az e-mail címek nem egyeznek!");
+                MessageBox.Show("The emails do not match!");
             }
             else if (password != confirmPassword)
             {
-                MessageBox.Show("A jelszavak nem egyeznek!");
+                MessageBox.Show("The passwords do not match!");
             }
             else if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Minden mezőt ki kell tölteni!");
+                MessageBox.Show("All fields must be filled out!");
             }
             else
             {
-                // Regisztráció sikeres, a felhasználónév mentése és visszatérés a bejelentkezéshez
-                registeredUsername = username;
-                MessageBox.Show("Sikeres regisztráció!");
-
-                // A regisztrált felhasználónév beállítása a bejelentkezési felület felhasználónév mezőjébe
-                UsernameTextBox.Text = registeredUsername;
-
-                // Visszatérés a bejelentkezési felületre
-                RegistrationGrid.Visibility = Visibility.Collapsed;
-                LoginGrid.Visibility = Visibility.Visible;
-                
+                // Call the RegisterUser method to handle the registration
+                RegisterUser(username, email, password);
             }
         }
 
