@@ -18,20 +18,27 @@ namespace CasinoPRO
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Global Variables
         private double balance = 0;
+        private bool isLoggedIn = false;
+        TextBlock usernameTextBlock;
+        public ICommand FinalizeBetCommand { get; set; }
+        private List<string> finalizedBets = new List<string>();
+        public ObservableCollection<BetCartItem> Bets { get; set; }
+        TextBlock usernameText;
+        TextBlock emailText;
+        TextBox usernameTextBox;
+        TextBox emailTextBox;
+        Button saveButton;
+        Button editButton;
+        #endregion
 
-        
         public class BetCartItem
         {
             public string TeamName { get; set; }
             public double BetAmount { get; set; }
         }
-        private bool isLoggedIn = false;
-        TextBlock usernameTextBlock;
-        public ICommand FinalizeBetCommand { get; set; }
-        private List<string> finalizedBets = new List<string>();
 
-        public ObservableCollection<BetCartItem> Bets { get; set; }
         public MainWindow()
         {
             InitializeComponent();
@@ -121,12 +128,6 @@ namespace CasinoPRO
             }
             }
         // Globális változók létrehozása a TextBlock-ok és TextBox-okhoz
-        TextBlock usernameText;
-        TextBlock emailText;
-        TextBox usernameTextBox;
-        TextBox emailTextBox;
-        Button saveButton;
-        Button editButton;
 
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
@@ -402,8 +403,6 @@ namespace CasinoPRO
             editButton.Visibility = Visibility.Visible;
         }
 
-
-
         // Felhasználói ikonra kattintás esemény
         private void UserIcon_Click(object sender, RoutedEventArgs e)
         {
@@ -417,6 +416,7 @@ namespace CasinoPRO
                 UserSidebar.Visibility = Visibility.Collapsed;
             }
         }
+
         private void MainWindow_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             // Ha a kattintás nem az oldalsó sávon történik, rejtse el azt
@@ -429,6 +429,7 @@ namespace CasinoPRO
                 }
             }
         }
+
         private bool IsMouseOverSidebar(MouseButtonEventArgs e)
         {
             var mousePos = e.GetPosition(UserSidebar);
@@ -446,6 +447,7 @@ namespace CasinoPRO
             isLoggedIn = false;// Bejelentkezés gomb megjelenítése
             BalanceTxt.Content = "0 HUF";
         }
+
         private void CartButton_Click(object sender, RoutedEventArgs e)
         {
             // Show the sidebar and overlay
@@ -460,7 +462,6 @@ namespace CasinoPRO
             RightSidebar.Visibility = Visibility.Collapsed;
             RightSidebarOverlay.Visibility = Visibility.Collapsed;
         }
-
 
         // Fogadási lehetőségre kattintás esemény
         private void BetOption_Click(object sender, RoutedEventArgs e)
@@ -499,6 +500,7 @@ namespace CasinoPRO
         {
             e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
         }
+
         private void OnTeamSelected(string teamName)
         {
             var existingBet = Bets.FirstOrDefault(b => b.TeamName == teamName);
@@ -512,6 +514,8 @@ namespace CasinoPRO
                 Bets.Add(betItem);
             }
         }
+
+        // Fogadás véglegesítése
         private void FinalizeBet(object bet)
         {
             
@@ -525,9 +529,6 @@ namespace CasinoPRO
                 Bets.Remove(betItem);
             }
         }
-
-        // Fogadás véglegesítése
-        
 
         // Eddigi fogadások megjelenítése
         private void EddigiFogadasaim_Click(object sender, RoutedEventArgs e)
@@ -646,6 +647,7 @@ namespace CasinoPRO
                 }
             }
         }
+
         private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
         {
             // Rejtsd el a befizetési panelt
@@ -716,6 +718,7 @@ namespace CasinoPRO
         {
             e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
         }
+
         private void KifizetesButton_Click(object sender, RoutedEventArgs e)
         { 
 
@@ -819,7 +822,6 @@ namespace CasinoPRO
             Grid mainGrid = this.Content as Grid;
             mainGrid.Children.Add(kifizetesPanel);
         }
-
 
         // Gombok létrehozása a fogadási lehetőségekhez
         private Button CreateBetButton(string content)
