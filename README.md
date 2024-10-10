@@ -1,0 +1,5 @@
+- admin összekapcsolása belépéssel
+- profil lehetőségekre kattintva töröljön mindent
+- cart finalize
+- fogadasi lehetosegek betoltese adminba es alapba
+- elo legjobb adminbol beimportalni
