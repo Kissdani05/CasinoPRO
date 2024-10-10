@@ -18,15 +18,19 @@ namespace CasinoPRO
     /// </summary>
     public partial class MainWindow : Window
     {
+        private double balance = 0;
+
+        
         public class BetCartItem
         {
             public string TeamName { get; set; }
             public double BetAmount { get; set; }
         }
         private bool isLoggedIn = false;
+        TextBlock usernameTextBlock;
         public ICommand FinalizeBetCommand { get; set; }
         private List<string> finalizedBets = new List<string>();
-        private double balance = 0;
+
         public ObservableCollection<BetCartItem> Bets { get; set; }
         public MainWindow()
         {
@@ -38,14 +42,27 @@ namespace CasinoPRO
         }
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
+            // Create and show the login page
             LoginPage loginPage = new LoginPage();
-            loginPage.ShowDialog();
-            isLoggedIn = true;
-            // Felhasználó sikeresen bejelentkezett (példa)
-            if (isLoggedIn == true) {
+
+            // Show the login window as a dialog
+            bool? loginResult = loginPage.ShowDialog();
+
+            // Check if login was successful
+            if (loginResult == true)
+            {
+                // Set the logged-in status only if the login is actually successful
+                isLoggedIn = true;
+
+                // Get the balance from the LoginPage and update it in MainWindow
+                balance = loginPage.UserBalance;  // Retrieve the balance from LoginPage
+
+                // Update balance in the UI
+                BalanceTxt.Content = balance.ToString() + " HUF";
+
+                // Call any other post-login actions
                 Bejelentkezes();
             }
-
         }
 
 
@@ -54,11 +71,55 @@ namespace CasinoPRO
         {
             if (isLoggedIn == true)
             {
-                LoginButton.Visibility = Visibility.Collapsed; // Rejtse el a bejelentkezés gombot
+
+                try
+                {
+                    DatabaseConnection dbContext = new DatabaseConnection();
+                    MySqlConnection conn = dbContext.OpenConnection();
+                    string loggedInUsername = SessionManager.LoggedInUsername;
+                    if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                    {
+                        string query = "SELECT Balance FROM Bettors WHERE Username = @username";
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                // Store the balance in the 'balance' variable and update the UI
+                                balance = Convert.ToDouble(reader["Balance"]);
+                                BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance in UI
+                            }
+                        }
+                    }
+                    dbContext.CloseConnection();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error loading balance: " + ex.Message);
+                }
+
+                // Hide the login button
+                LoginButton.Visibility = Visibility.Collapsed;
+
+                // Show the user icon
                 UserIcon.Visibility = Visibility.Visible;
-                // Mutassa meg a felhasználói ikont
+
+                // Dynamically create the username label (TextBlock)
+                usernameTextBlock = new TextBlock
+                {
+                    Text = $"Welcome, {SessionManager.LoggedInUsername}",
+                    FontSize = 16,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(10),
+                    Visibility = Visibility.Collapsed
+                };
+
+                // Add the dynamic username label to your UI (for example, a StackPanel)
+                UserSidebar.Children.Add(usernameTextBlock);
             }
-        }
+            }
         // Globális változók létrehozása a TextBlock-ok és TextBox-okhoz
         TextBlock usernameText;
         TextBlock emailText;
@@ -70,9 +131,11 @@ namespace CasinoPRO
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
             MySqlConnection conn = null;
-            string userName = null; // This will store the fetched username
-            string userEmail = null; // This will store the fetched email
+            string userName = null;
+            string userEmail = null;
+            double userBalance = 0;  // Store the fetched balance
             string loggedInUsername = SessionManager.LoggedInUsername;
+
             try
             {
                 DatabaseConnection dbContext = new DatabaseConnection();
@@ -80,11 +143,9 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    // Query to fetch user data (replace with your actual query)
-                    string query = "SELECT Username, Email FROM Bettors WHERE Username = @username";  // Assuming 'Username' is unique
+                    // Query to fetch username, email, and balance
+                    string query = "SELECT Username, Email, Balance FROM Bettors WHERE Username = @username";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-
-                    // Assuming you have stored the username of the logged-in user  // Replace with actual logic for fetching current username
                     cmd.Parameters.AddWithValue("@username", loggedInUsername);
 
                     // Execute the query and read data
@@ -92,9 +153,9 @@ namespace CasinoPRO
                     {
                         if (reader.Read())
                         {
-                            // Assign the values from the database to userName and userEmail
                             userName = reader["Username"].ToString();
                             userEmail = reader["Email"].ToString();
+                            userBalance = Convert.ToDouble(reader["Balance"]);  // Get balance from DB
                         }
                     }
                 }
@@ -111,6 +172,10 @@ namespace CasinoPRO
                 }
             }
 
+            // Update the balance in the UI
+            balance = userBalance;  // Set the balance in your app
+            BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance label
+
             // Hide other panels
             BetOptionsPanel.Visibility = Visibility.Collapsed;
             LiveBetsPanel.Visibility = Visibility.Collapsed;
@@ -118,6 +183,7 @@ namespace CasinoPRO
             UserSidebar.Visibility = Visibility.Collapsed;
 
             // Display user information
+            #region User info
             StackPanel infoPanel = new StackPanel() { Margin = new Thickness(50) };
             TextBlock header = new TextBlock
             {
@@ -177,35 +243,113 @@ namespace CasinoPRO
             // Add to the main grid
             Grid mainGrid = this.Content as Grid;
             mainGrid.Children.Add(infoPanel);
+            #endregion
         }
 
-            // Módosítás gomb eseménykezelője
-            private void EditButton_Click(object sender, RoutedEventArgs e)
+        // Módosítás gomb eseménykezelője
+        private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            MySqlConnection conn = null;
+            string userName = null;
+            string userEmail = null;
+            string newUserName = null;
+            string newUserEmail = null;
+            string loggedInUsername = SessionManager.LoggedInUsername;
+
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Query to fetch username, email, and balance
+                    string query = "SELECT Username, Email FROM Bettors WHERE Username = @username";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                    // Execute the query and read data
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            userName = reader["Username"].ToString();
+                            userEmail = reader["Email"].ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error fetching user data: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+            }
+
+
             usernameTextBox = new TextBox
             {
-                Text = "asdasd", // Az aktuális felhasználónév
+                Text = $"{userName}", // Az aktuális felhasználónév
                 Margin = new Thickness(0, 5, 0, 5)
             };
 
             emailTextBox = new TextBox
             {
-                Text = "asd@gmail.com", // Az aktuális e-mail cím
+                Text = $"{userEmail}", // Az aktuális e-mail cím
                 Margin = new Thickness(0, 5, 0, 5)
             };
 
-            // A TextBlock-okat eltávolítjuk
+
+
+            #region Test codes
+            //A TextBlock-okat eltávolítjuk
             StackPanel parentPanel = usernameText.Parent as StackPanel;
             parentPanel.Children.Remove(usernameText);
             parentPanel.Children.Remove(emailText);
 
-            // Hozzáadjuk a TextBox-okat
+            //Hozzáadjuk a TextBox - okat
             parentPanel.Children.Insert(1, usernameTextBox);
             parentPanel.Children.Insert(2, emailTextBox);
-
+            #endregion
             // Elrejtjük a Módosítás gombot és megjelenítjük a Mentés gombot
             editButton.Visibility = Visibility.Collapsed;
             saveButton.Visibility = Visibility.Visible;
+        }
+
+        private void LoadUserBalance(string username)
+        {
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                MySqlConnection conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT Balance FROM Bettors WHERE Username = @username";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Store the balance in the 'balance' variable and update the UI
+                            balance = Convert.ToDouble(reader["Balance"]);
+                            BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance in UI
+                        }
+                    }
+                }
+                dbContext.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading balance: " + ex.Message);
+            }
         }
 
         // Mentés gomb eseménykezelője
@@ -214,21 +358,51 @@ namespace CasinoPRO
             string newUsername = usernameTextBox.Text;
             string newEmail = emailTextBox.Text;
 
-            // Visszaalakítjuk a TextBox-okat TextBlock-okká
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                MySqlConnection conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Update the username and email in the database
+                    string query = "UPDATE Bettors SET Username = @newUsername, Email = @newEmail WHERE Username = @oldUsername";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@newUsername", newUsername);
+                    cmd.Parameters.AddWithValue("@newEmail", newEmail);
+                    cmd.Parameters.AddWithValue("@oldUsername", SessionManager.LoggedInUsername);
+                    cmd.ExecuteNonQuery();
+
+                    // Update SessionManager with the new username
+                    SessionManager.LoggedInUsername = newUsername;
+
+                    // Refresh user balance or other data if needed
+                    LoadUserBalance(newUsername);
+                    MessageBox.Show("User information updated successfully!");
+
+                    // Update the dynamically generated username label (TextBlock)
+                    if (usernameTextBlock != null)
+                    {
+                        usernameTextBlock.Text = $"Welcome, {newUsername}";
+                    }
+                }
+
+                dbContext.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating user data: " + ex.Message);
+            }
+
+            // Update the UI elements to reflect the new data
             usernameText.Text = $"Felhasználónév: {newUsername}";
             emailText.Text = $"E-mail cím: {newEmail}";
 
-            StackPanel parentPanel = usernameTextBox.Parent as StackPanel;
-            parentPanel.Children.Remove(usernameTextBox);
-            parentPanel.Children.Remove(emailTextBox);
-
-            parentPanel.Children.Insert(1, usernameText);
-            parentPanel.Children.Insert(2, emailText);
-
-            // A mentés gomb elrejtése és a módosítás gomb megjelenítése
             saveButton.Visibility = Visibility.Collapsed;
             editButton.Visibility = Visibility.Visible;
         }
+
+
 
         // Felhasználói ikonra kattintás esemény
         private void UserIcon_Click(object sender, RoutedEventArgs e)
@@ -270,6 +444,7 @@ namespace CasinoPRO
             UserIcon.Visibility = Visibility.Collapsed; // Ikon elrejtése
             LoginButton.Visibility = Visibility.Visible;
             isLoggedIn = false;// Bejelentkezés gomb megjelenítése
+            BalanceTxt.Content = "0 HUF";
         }
         private void CartButton_Click(object sender, RoutedEventArgs e)
         {
@@ -293,12 +468,20 @@ namespace CasinoPRO
             
             if (!isLoggedIn)
             {
-                MessageBox.Show("A fogadáshoz be kell jelentkeznie.");
+                MessageBox.Show("You need to log in to deposit.");
                 LoginPage loginPage = new LoginPage();
-                loginPage.ShowDialog(); // Átirányít a bejelentkezési felületre
-                isLoggedIn = true;
-                Bejelentkezes();
-                return;
+                bool? loginResult = loginPage.ShowDialog();
+                
+                if (loginResult == true)
+                {
+                    isLoggedIn = true;
+                    Bejelentkezes();
+                }
+                else
+                {
+                    // Handle case where user closes the login window without logging in
+                    MessageBox.Show("Login was unsuccessful. Please try again.");
+                }
             }
             else {
                 var button = sender as Button;
@@ -440,24 +623,28 @@ namespace CasinoPRO
         {
             if (isLoggedIn == true)
             {
-            BetOptionsPanel.Visibility = Visibility.Collapsed;
-            LiveBetsPanel.Visibility = Visibility.Collapsed;
-            OptionalBets.Visibility = Visibility.Collapsed;
-            UserSidebar.Visibility = Visibility.Collapsed;
-            DepositPanel.Visibility = Visibility.Visible;
-
+                BetOptionsPanel.Visibility = Visibility.Collapsed;
+                LiveBetsPanel.Visibility = Visibility.Collapsed;
+                OptionalBets.Visibility = Visibility.Collapsed;
+                UserSidebar.Visibility = Visibility.Collapsed;
+                DepositPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                MessageBox.Show("A fogadáshoz be kell jelentkeznie.");
+                MessageBox.Show("You need to log in to deposit.");
                 LoginPage loginPage = new LoginPage();
-                loginPage.ShowDialog(); // Átirányít a bejelentkezési felületre
-                isLoggedIn = true;
-                Bejelentkezes();
-                return;
+                bool? loginResult = loginPage.ShowDialog();
+                if (loginResult == true)
+                {
+                    isLoggedIn = true;
+                    Bejelentkezes();
+                }
+                else
+                {
+                    // Handle case where user closes the login window without logging in
+                    MessageBox.Show("Login was unsuccessful. Please try again.");
+                }
             }
-            // Rejtsd el a fő tartalmat
-            // Mutasd a befizetési panelt
         }
         private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
         {
@@ -478,9 +665,40 @@ namespace CasinoPRO
                 balance += depositAmount;
 
                 // Frissítjük a balance kijelzését
-                BalanceTxt.Content = balance.ToString("")+" HUF";
+                BalanceTxt.Content = balance.ToString("") + " HUF";
 
-                MessageBox.Show($"Sikeresen befizetett {depositAmount} HUF");
+                // Update the balance in the database
+                try
+                {
+                    // Get the logged-in user's username
+                    string loggedInUsername = SessionManager.LoggedInUsername;
+                    MessageBox.Show(loggedInUsername);
+
+                    // Open database connection
+                    DatabaseConnection dbContext = new DatabaseConnection();
+                    MySqlConnection conn = dbContext.OpenConnection();
+
+                    if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                    {
+                        // Update query to modify the balance for the logged-in user
+                        string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@balance", balance);
+                        cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                        // Execute the query
+                        cmd.ExecuteNonQuery();
+
+                        MessageBox.Show($"Sikeresen befizetett {depositAmount} HUF, egyenlege frissítve.");
+                    }
+
+                    // Close the connection
+                    dbContext.CloseConnection();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Hiba történt a befizetés során: " + ex.Message);
+                }
 
                 // Rejtsd el a befizetési panelt és térj vissza a fő UI-hoz
                 DepositPanel.Visibility = Visibility.Collapsed;
@@ -493,12 +711,14 @@ namespace CasinoPRO
                 MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
             }
         }
+
         private void DepositAmount_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
         }
         private void KifizetesButton_Click(object sender, RoutedEventArgs e)
-        {
+        { 
+
             // Hide other panels
             BetOptionsPanel.Visibility = Visibility.Collapsed;
             LiveBetsPanel.Visibility = Visibility.Collapsed;
@@ -522,10 +742,10 @@ namespace CasinoPRO
                 Width = 150,
                 Margin = new Thickness(0, 5, 0, 5)
             };
-            kifizetesAmountBox.PreviewTextInput += BetAmount_PreviewTextInput; // Csak számokat fogadjon el
+            kifizetesAmountBox.PreviewTextInput += BetAmount_PreviewTextInput; // Only allow numeric input
             kifizetesPanel.Children.Add(kifizetesAmountBox);
 
-            // "Kifizetés" gomb
+            // "Kifizetés" button
             Button kifizetesButton = new Button
             {
                 Content = "Kifizetés",
@@ -538,9 +758,40 @@ namespace CasinoPRO
                 {
                     if (balance >= kifizetesAmount)
                     {
-                        balance -= kifizetesAmount; // Levonjuk az összeget az egyenlegből
-                        BalanceTxt.Content = $"{balance} HUF"; // Frissítjük a felhasználói egyenleget a UI-ban
-                        MessageBox.Show($"Sikeres kifizetés: {kifizetesAmount} HUF");
+                        balance -= kifizetesAmount; // Subtract amount from balance
+                        BalanceTxt.Content = $"{balance} HUF"; // Update UI balance
+
+                        // Update the balance in the database
+                        try
+                        {
+                            // Get the logged-in user's username
+                            string loggedInUsername = SessionManager.LoggedInUsername;
+
+                            // Open database connection
+                            DatabaseConnection dbContext = new DatabaseConnection();
+                            MySqlConnection conn = dbContext.OpenConnection();
+
+                            if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                            {
+                                // Update query to modify the balance for the logged-in user
+                                string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
+                                MySqlCommand cmd = new MySqlCommand(query, conn);
+                                cmd.Parameters.AddWithValue("@balance", balance);
+                                cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                                // Execute the query
+                                cmd.ExecuteNonQuery();
+
+                                MessageBox.Show($"Sikeres kifizetés: {kifizetesAmount} HUF, egyenlege frissítve.");
+                            }
+
+                            // Close the connection
+                            dbContext.CloseConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Hiba történt a kifizetés során: " + ex.Message);
+                        }
                     }
                     else
                     {
@@ -554,14 +805,14 @@ namespace CasinoPRO
             };
             kifizetesPanel.Children.Add(kifizetesButton);
 
-            // "Vissza" gomb
+            // "Vissza" button
             Button backButton = new Button
             {
                 Content = "Vissza",
                 Width = 100,
                 Margin = new Thickness(0, 20, 0, 0)
             };
-            backButton.Click += BackButton_Click; // Visszatérés a főoldalra
+            backButton.Click += BackButton_Click; // Return to the main page
             kifizetesPanel.Children.Add(backButton);
 
             // Add the panel to the main grid
