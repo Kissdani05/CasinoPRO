@@ -8,11 +8,14 @@ namespace CasinoPRO
     {
         private string registeredUsername = string.Empty;
         private DatabaseConnection dbContext;
+        public double UserBalance { get; private set; }
         public LoginPage()
         {
             InitializeComponent();
             dbContext = new DatabaseConnection();
         }
+
+
 
         public bool ValidateLogin(string username, string password)
         {
@@ -25,7 +28,7 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    string query = "SELECT PasswordHash FROM Bettors WHERE Username = @username AND IsActive = 1";
+                    string query = "SELECT Password FROM Bettors WHERE Username = @username AND IsActive = 1";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@username", username);
 
@@ -34,7 +37,7 @@ namespace CasinoPRO
                     {
                         if (reader.Read())
                         {
-                            storedHash = reader["PasswordHash"].ToString();
+                            storedHash = reader["Password"].ToString();
                         }
                     }
 
@@ -59,6 +62,36 @@ namespace CasinoPRO
             return isValid;
         }
 
+        private void LoadUserBalance(string username)
+        {
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                MySqlConnection conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT Balance FROM Bettors WHERE Username = @username";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Store the balance in UserBalance
+                            UserBalance = Convert.ToDouble(reader["Balance"]);
+                            MessageBox.Show(UserBalance.ToString());
+                        }
+                    }
+                }
+                dbContext.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading balance: " + ex.Message);
+            }
+        }
         // Bejelentkezés gomb eseménykezelő
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -75,28 +108,20 @@ namespace CasinoPRO
                 SessionManager.LoggedInUsername = username;
                 MessageBox.Show("Login successful!");
 
-                // Perform any additional actions, like navigating to a different page or closing the login window
-                this.Close();  // For example, close the login window
+                // Load the user balance
+                LoadUserBalance(username);
+
+                // Set DialogResult to true to signal successful login
+                this.DialogResult = true;
+
+                // Close the login window and pass control back to MainWindow
+                this.Close();
             }
             else
             {
                 // If login fails, show failure message
                 MessageBox.Show("Invalid username or password. Please try again.");
             }
-
-            //string email = RegisterEmailTextBox.Text;
-            //string username = UsernameTextBox.Text;
-            //string password = PasswordTextBox.Password;
-
-            //if (username == registeredUsername && password == "password")
-            //{
-            //    MessageBox.Show("Sikeres bejelentkezés!");
-            //    this.Close();
-            //}
-            //else
-            //{
-            //    MessageBox.Show("Hibás felhasználónév vagy jelszó!");
-            //}
         }
 
         // Elfelejtett jelszó link eseménykezelő
@@ -130,11 +155,11 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    string query = "INSERT INTO Bettors (Username, Email, PasswordHash, IsActive) VALUES (@username, @Email, @PasswordHash, 1)";
+                    string query = "INSERT INTO Bettors (Username, Email, Password, IsActive) VALUES (@username, @Email, @Password, 1)";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@username", username);
                     cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@PasswordHash", BCrypt.Net.BCrypt.HashPassword(password));
+                    cmd.Parameters.AddWithValue("@Password", BCrypt.Net.BCrypt.HashPassword(password));
 
                     int result = cmd.ExecuteNonQuery();
                     isRegistered = result > 0;
