@@ -47,7 +47,12 @@ namespace CasinoPRO
             CartItemsControl.ItemsSource = Bets;
             FinalizeBetCommand = new RelayCommand(FinalizeBet);
         }
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void Admin_Click(object sender, RoutedEventArgs e)
+        { 
+            AdminPanel adminPage = new AdminPanel();
+            adminPage.Show();
+        }
+            private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             // Create and show the login page
             LoginPage loginPage = new LoginPage();

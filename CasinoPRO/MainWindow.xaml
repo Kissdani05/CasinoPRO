@@ -28,6 +28,7 @@
 
             <!-- Befizetés gomb -->
             <Button Content="Befizetés" DockPanel.Dock="Left" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
+            <Button Content="Admin" Click="Admin_Click"/>
             <Button Name="CartButton" VerticalAlignment="Center" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="10, 0" Click="CartButton_Click">
                 <Label Content="CART" Width="50" Height="30"/>
             </Button>
