@@ -54,7 +54,7 @@
                                 <TextBox Width="50" Text="{Binding BetAmount, UpdateSourceTrigger=PropertyChanged}" Margin="5"/>
 
                                 <!-- Finalize Bet Button -->
-                                <Button Content="Finalize" Width="60" Margin="5" Command="{Binding DataContext.FinalizeBetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"/>
+                                <Button Content="Finalize" Width="60" Margin="5" Click="FinalizeBet_CLick"/>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
