@@ -136,126 +136,118 @@ namespace CasinoPRO
 
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
-            MySqlConnection conn = null;
-            string userName = null;
-            string userEmail = null;
-            double userBalance = 0;  // Store the fetched balance
-            string loggedInUsername = SessionManager.LoggedInUsername;
-
-            try
+            Grid mainGrid = this.Content as Grid;
+            if (mainGrid != null)
             {
-                DatabaseConnection dbContext = new DatabaseConnection();
-                conn = dbContext.OpenConnection();
+                // Töröljük az előző dinamikus paneleket
+                ClearDynamicPanels(mainGrid);
+                DepositPanel.Visibility = Visibility.Collapsed;
+                BetOptionsPanel.Visibility = Visibility.Collapsed;
+                LiveBetsPanel.Visibility = Visibility.Collapsed;
+                OptionalBets.Visibility = Visibility.Collapsed;
+                UserSidebar.Visibility = Visibility.Collapsed;
 
-                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                MySqlConnection conn = null;
+                string userName = null;
+                string userEmail = null;
+                double userBalance = 0;
+                string loggedInUsername = SessionManager.LoggedInUsername;
+
+                try
                 {
-                    // Query to fetch username, email, and balance
-                    string query = "SELECT Username, Email, Balance FROM Bettors WHERE Username = @username";
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
+                    DatabaseConnection dbContext = new DatabaseConnection();
+                    conn = dbContext.OpenConnection();
 
-                    // Execute the query and read data
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    if (conn != null && conn.State == System.Data.ConnectionState.Open)
                     {
-                        if (reader.Read())
+                        string query = "SELECT Username, Email, Balance FROM Bettors WHERE Username = @username";
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            userName = reader["Username"].ToString();
-                            userEmail = reader["Email"].ToString();
-                            userBalance = Convert.ToDouble(reader["Balance"]);  // Get balance from DB
+                            if (reader.Read())
+                            {
+                                userName = reader["Username"].ToString();
+                                userEmail = reader["Email"].ToString();
+                                userBalance = Convert.ToDouble(reader["Balance"]);
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error fetching user data: " + ex.Message);
-            }
-            finally
-            {
-                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                catch (Exception ex)
                 {
-                    conn.Close();
+                    MessageBox.Show("Error fetching user data: " + ex.Message);
                 }
+                finally
+                {
+                    if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                    {
+                        conn.Close();
+                    }
+                }
+
+                balance = userBalance;
+                BalanceTxt.Content = balance.ToString() + " HUF";
+
+                StackPanel infoPanel = new StackPanel() { Name = "DynamicPanel", Margin = new Thickness(50) };
+                TextBlock header = new TextBlock
+                {
+                    Text = "Adataim",
+                    FontWeight = FontWeights.Bold,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+                infoPanel.Children.Add(header);
+
+                usernameText = new TextBlock
+                {
+                    Text = $"Felhasználónév: {userName}",
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+                infoPanel.Children.Add(usernameText);
+
+                emailText = new TextBlock
+                {
+                    Text = $"E-mail cím: {userEmail}",
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+                infoPanel.Children.Add(emailText);
+
+                editButton = new Button
+                {
+                    Content = "Módosítás",
+                    Width = 100,
+                    Margin = new Thickness(0, 20, 0, 0)
+                };
+                editButton.Click += EditButton_Click;
+                infoPanel.Children.Add(editButton);
+
+                saveButton = new Button
+                {
+                    Content = "Mentés",
+                    Width = 100,
+                    Margin = new Thickness(0, 20, 0, 0),
+                    Visibility = Visibility.Collapsed
+                };
+                saveButton.Click += SaveButton_Click;
+                infoPanel.Children.Add(saveButton);
+
+                Button backButton = new Button
+                {
+                    Content = "Vissza",
+                    Width = 100,
+                    Margin = new Thickness(0, 20, 0, 0)
+                };
+                backButton.Click += BackButton_Click;
+                infoPanel.Children.Add(backButton);
+
+                mainGrid.Children.Add(infoPanel);
             }
-
-            // Update the balance in the UI
-            balance = userBalance;  // Set the balance in your app
-            BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance label
-
-            // Hide other panels
-            BetOptionsPanel.Visibility = Visibility.Collapsed;
-            LiveBetsPanel.Visibility = Visibility.Collapsed;
-            OptionalBets.Visibility = Visibility.Collapsed;
-            UserSidebar.Visibility = Visibility.Collapsed;
-
-            // Display user information
-            #region User info
-            StackPanel infoPanel = new StackPanel() { Margin = new Thickness(50) };
-            TextBlock header = new TextBlock
-            {
-                Text = "Adataim",
-                FontWeight = FontWeights.Bold,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            infoPanel.Children.Add(header);
-
-            // Display the fetched username and email
-            usernameText = new TextBlock
-            {
-                Text = $"Felhasználónév: {userName}", // Use the value from the database
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            infoPanel.Children.Add(usernameText);
-
-            emailText = new TextBlock
-            {
-                Text = $"E-mail cím: {userEmail}", // Use the value from the database
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            infoPanel.Children.Add(emailText);
-
-            // Edit button
-            editButton = new Button
-            {
-                Content = "Módosítás",
-                Width = 100,
-                Margin = new Thickness(0, 20, 0, 0)
-            };
-            editButton.Click += EditButton_Click;
-            infoPanel.Children.Add(editButton);
-
-            // Save button (initially hidden)
-            saveButton = new Button
-            {
-                Content = "Mentés",
-                Width = 100,
-                Margin = new Thickness(0, 20, 0, 0),
-                Visibility = Visibility.Collapsed // Initially hidden
-            };
-            saveButton.Click += SaveButton_Click;
-            infoPanel.Children.Add(saveButton);
-
-            // Back button
-            Button backButton = new Button
-            {
-                Content = "Vissza",
-                Width = 100,
-                Margin = new Thickness(0, 20, 0, 0)
-            };
-            backButton.Click += BackButton_Click;
-            infoPanel.Children.Add(backButton);
-
-            // Add to the main grid
-            Grid mainGrid = this.Content as Grid;
-            mainGrid.Children.Add(infoPanel);
-            #endregion
-
-
         }
 
-        // Módosítás gomb eseménykezelője
-        private void EditButton_Click(object sender, RoutedEventArgs e)
+            // Módosítás gomb eseménykezelője
+            private void EditButton_Click(object sender, RoutedEventArgs e)
         {
             MySqlConnection conn = null;
             string userName = null;
@@ -579,6 +571,19 @@ namespace CasinoPRO
 
         }
 
+        private void ClearDynamicPanels(Grid mainGrid)
+        {
+            // Csak azokat az elemeket távolítjuk el, amelyeknek a neve "DynamicPanel"
+            var dynamicPanels = mainGrid.Children
+                                        .OfType<UIElement>()
+                                        .Where(x => x is StackPanel && ((StackPanel)x).Name == "DynamicPanel")
+                                        .ToList();
+
+            foreach (var panel in dynamicPanels)
+            {
+                mainGrid.Children.Remove(panel);
+            }
+        }
         // Eddigi fogadások megjelenítése
         private void EddigiFogadasaim_Click(object sender, RoutedEventArgs e)
         {
@@ -586,13 +591,16 @@ namespace CasinoPRO
             Grid mainGrid = this.Content as Grid;
             if (mainGrid != null)
             {
+                // Töröljük az előző dinamikus paneleket
+                ClearDynamicPanels(mainGrid);
+                DepositPanel.Visibility = Visibility.Collapsed;
                 BetOptionsPanel.Visibility = Visibility.Collapsed;
                 LiveBetsPanel.Visibility = Visibility.Collapsed;
                 OptionalBets.Visibility = Visibility.Collapsed;
                 UserSidebar.Visibility = Visibility.Collapsed;
 
                 // Új lista a fogadások megjelenítéséhez
-                StackPanel betsPanel = new StackPanel() { Margin = new Thickness(50), };
+                StackPanel betsPanel = new StackPanel() { Name = "DynamicPanel", Margin = new Thickness(50) };
                 TextBlock header = new TextBlock
                 {
                     Text = "Eddigi fogadásaim",
@@ -625,7 +633,6 @@ namespace CasinoPRO
                     betsPanel.Children.Add(noBetsText);
                 }
 
-                // Vissza gomb hozzáadása
                 Button backButton = new Button
                 {
                     Content = "Vissza",
@@ -637,7 +644,7 @@ namespace CasinoPRO
 
                 mainGrid.Children.Add(betsPanel);
             }
-            
+
         }
 
         // "Vissza" gomb eseménykezelője
@@ -672,31 +679,42 @@ namespace CasinoPRO
 
         private void ShowDepositPanel_Click(object sender, RoutedEventArgs e)
         {
-            if (isLoggedIn == true)
+            Grid mainGrid = this.Content as Grid;
+            if (mainGrid != null)
             {
-                BetOptionsPanel.Visibility = Visibility.Collapsed;
-                LiveBetsPanel.Visibility = Visibility.Collapsed;
-                OptionalBets.Visibility = Visibility.Collapsed;
-                UserSidebar.Visibility = Visibility.Collapsed;
-                DepositPanel.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                MessageBox.Show("You need to log in to deposit.");
-                LoginPage loginPage = new LoginPage();
-                bool? loginResult = loginPage.ShowDialog();
-                if (loginResult == true)
+                // Töröljük az előző dinamikus paneleket
+                ClearDynamicPanels(mainGrid);
+
+                if (isLoggedIn == true)
                 {
-                    isLoggedIn = true;
-                    Bejelentkezes();
+                    // Elrejtjük a többi panelt
+                    BetOptionsPanel.Visibility = Visibility.Collapsed;
+                    LiveBetsPanel.Visibility = Visibility.Collapsed;
+                    OptionalBets.Visibility = Visibility.Collapsed;
+                    UserSidebar.Visibility = Visibility.Collapsed;
+
+                    // Megjelenítjük a DepositPanel-t
+                    DepositPanel.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    // Handle case where user closes the login window without logging in
-                    MessageBox.Show("Login was unsuccessful. Please try again.");
+                    MessageBox.Show("You need to log in to deposit.");
+                    LoginPage loginPage = new LoginPage();
+                    bool? loginResult = loginPage.ShowDialog();
+                    if (loginResult == true)
+                    {
+                        isLoggedIn = true;
+                        Bejelentkezes();
+                    }
+                    else
+                    {
+                        // Ha a felhasználó bezárja a bejelentkező ablakot, és nem jelentkezik be
+                        MessageBox.Show("Login was unsuccessful. Please try again.");
+                    }
                 }
             }
         }
+
 
         private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
         {
@@ -770,108 +788,108 @@ namespace CasinoPRO
         }
 
         private void KifizetesButton_Click(object sender, RoutedEventArgs e)
-        { 
-
-            // Hide other panels
-            BetOptionsPanel.Visibility = Visibility.Collapsed;
-            LiveBetsPanel.Visibility = Visibility.Collapsed;
-            OptionalBets.Visibility = Visibility.Collapsed;
-            UserSidebar.Visibility = Visibility.Collapsed;
-
-            // Create a StackPanel for withdrawal inputs
-            StackPanel kifizetesPanel = new StackPanel() { Margin = new Thickness(50) };
-            TextBlock header = new TextBlock
+        {
+            Grid mainGrid = this.Content as Grid;
+            if (mainGrid != null)
             {
-                Text = "Kifizetés",
-                FontWeight = FontWeights.Bold,
-                FontSize = 18,
-                Margin = new Thickness(0, 0, 0, 10)
-            };
-            kifizetesPanel.Children.Add(header);
+                // Töröljük az előző dinamikus paneleket
+                ClearDynamicPanels(mainGrid);
+                DepositPanel.Visibility = Visibility.Collapsed;
+                // Elrejtjük a többi panelt
+                BetOptionsPanel.Visibility = Visibility.Collapsed;
+                LiveBetsPanel.Visibility = Visibility.Collapsed;
+                OptionalBets.Visibility = Visibility.Collapsed;
+                UserSidebar.Visibility = Visibility.Collapsed;
 
-            // Create the input field for amount (numeric input only)
-            TextBox kifizetesAmountBox = new TextBox
-            {
-                Width = 150,
-                Margin = new Thickness(0, 5, 0, 5)
-            };
-            kifizetesAmountBox.PreviewTextInput += BetAmount_PreviewTextInput; // Only allow numeric input
-            kifizetesPanel.Children.Add(kifizetesAmountBox);
-
-            // "Kifizetés" button
-            Button kifizetesButton = new Button
-            {
-                Content = "Kifizetés",
-                Width = 100,
-                Margin = new Thickness(0, 20, 0, 0)
-            };
-            kifizetesButton.Click += (s, args) =>
-            {
-                if (double.TryParse(kifizetesAmountBox.Text, out double kifizetesAmount) && kifizetesAmount > 0)
+                // Létrehozunk egy StackPanel-t a kifizetési beállításokhoz
+                StackPanel kifizetesPanel = new StackPanel() { Name = "DynamicPanel", Margin = new Thickness(50) };
+                TextBlock header = new TextBlock
                 {
-                    if (balance >= kifizetesAmount)
+                    Text = "Kifizetés",
+                    FontWeight = FontWeights.Bold,
+                    FontSize = 18,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+                kifizetesPanel.Children.Add(header);
+
+                // Létrehozzuk a bemeneti mezőt az összeghez (csak numerikus bevitel)
+                TextBox kifizetesAmountBox = new TextBox
+                {
+                    Width = 150,
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
+                kifizetesAmountBox.PreviewTextInput += BetAmount_PreviewTextInput; // Csak numerikus bevitel engedélyezése
+                kifizetesPanel.Children.Add(kifizetesAmountBox);
+
+                // "Kifizetés" gomb
+                Button kifizetesButton = new Button
+                {
+                    Content = "Kifizetés",
+                    Width = 100,
+                    Margin = new Thickness(0, 20, 0, 0)
+                };
+                kifizetesButton.Click += (s, args) =>
+                {
+                    if (double.TryParse(kifizetesAmountBox.Text, out double kifizetesAmount) && kifizetesAmount > 0)
                     {
-                        balance -= kifizetesAmount; // Subtract amount from balance
-                        BalanceTxt.Content = $"{balance} HUF"; // Update UI balance
-
-                        // Update the balance in the database
-                        try
+                        if (balance >= kifizetesAmount)
                         {
-                            // Get the logged-in user's username
-                            string loggedInUsername = SessionManager.LoggedInUsername;
+                            balance -= kifizetesAmount;
+                            BalanceTxt.Content = $"{balance} HUF"; // Frissítjük az egyenleget a UI-n
 
-                            // Open database connection
-                            DatabaseConnection dbContext = new DatabaseConnection();
-                            MySqlConnection conn = dbContext.OpenConnection();
-
-                            if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                            try
                             {
-                                // Update query to modify the balance for the logged-in user
-                                string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
-                                MySqlCommand cmd = new MySqlCommand(query, conn);
-                                cmd.Parameters.AddWithValue("@balance", balance);
-                                cmd.Parameters.AddWithValue("@username", loggedInUsername);
+                                string loggedInUsername = SessionManager.LoggedInUsername;
 
-                                // Execute the query
-                                cmd.ExecuteNonQuery();
+                                DatabaseConnection dbContext = new DatabaseConnection();
+                                MySqlConnection conn = dbContext.OpenConnection();
 
-                                MessageBox.Show($"Sikeres kifizetés: {kifizetesAmount} HUF, egyenlege frissítve.");
+                                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                                {
+                                    string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
+                                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                                    cmd.Parameters.AddWithValue("@balance", balance);
+                                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                                    cmd.ExecuteNonQuery();
+
+                                    MessageBox.Show($"Sikeres kifizetés: {kifizetesAmount} HUF, egyenlege frissítve.");
+                                }
+
+                                dbContext.CloseConnection();
                             }
-
-                            // Close the connection
-                            dbContext.CloseConnection();
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Hiba történt a kifizetés során: " + ex.Message);
+                            }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            MessageBox.Show("Hiba történt a kifizetés során: " + ex.Message);
+                            MessageBox.Show("Nincs elegendő egyenleg.");
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Nincs elegendő egyenleg.");
+                        MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
                     }
-                }
-                else
+                };
+                kifizetesPanel.Children.Add(kifizetesButton);
+
+                // "Vissza" gomb
+                Button backButton = new Button
                 {
-                    MessageBox.Show("Kérem, adjon meg egy érvényes összeget.");
-                }
-            };
-            kifizetesPanel.Children.Add(kifizetesButton);
+                    Content = "Vissza",
+                    Width = 100,
+                    Margin = new Thickness(0, 20, 0, 0)
+                };
+                backButton.Click += BackButton_Click; // Visszatérünk a főoldalra
+                kifizetesPanel.Children.Add(backButton);
 
-            // "Vissza" button
-            Button backButton = new Button
-            {
-                Content = "Vissza",
-                Width = 100,
-                Margin = new Thickness(0, 20, 0, 0)
-            };
-            backButton.Click += BackButton_Click; // Return to the main page
-            kifizetesPanel.Children.Add(backButton);
-
-            // Add the panel to the main grid
-            Grid mainGrid = this.Content as Grid;
-            mainGrid.Children.Add(kifizetesPanel);
+                // Hozzáadjuk a panelt a fő gridhez
+                mainGrid.Children.Add(kifizetesPanel);
+            }
         }
+
 
         // Gombok létrehozása a fogadási lehetőségekhez
         private Button CreateBetButton(string content)
