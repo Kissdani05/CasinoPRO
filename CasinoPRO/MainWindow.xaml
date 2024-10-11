@@ -29,6 +29,7 @@
             <!-- Befizetés gomb -->
             <Button Content="Befizetés" DockPanel.Dock="Left" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
             <Button Content="Admin" Click="Admin_Click"/>
+            <Button Content="Organizer" Click="Organizer_Click"/>
             <Button Name="CartButton" VerticalAlignment="Center" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="10, 0" Click="CartButton_Click">
                 <Label Content="CART" Width="50" Height="30"/>
             </Button>
@@ -53,7 +54,7 @@
                                 <!-- Bet Amount Input -->
                                 <TextBox Width="50" Text="{Binding BetAmount, UpdateSourceTrigger=PropertyChanged}" Margin="5"/>
 
-                                <!-- Finalize Bet Button -->
+                                <!-- Véglegesítő gomb -->
                                 <Button Content="Finalize" Width="60" Margin="5" Click="FinalizeBet_CLick"/>
                             </StackPanel>
                         </DataTemplate>
@@ -67,18 +68,11 @@
                 <Button Content="Eddigi fogadásaim" Width="180" Margin="10" Click="EddigiFogadasaim_Click"/>
                 <Button Content="Adataim" Width="180" Margin="10" Click="AdataimButton_Click"/>
                 <Button Content="Befizetés" DockPanel.Dock="Right" Width="180" Margin="10" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
-
                 <Button Content="Kifizetés" Width="180" Margin="10" Click="KifizetesButton_Click"/>
-
                 <Button Content="Kijelentkezés" Width="180" Margin="10" Click="LogoutButton_Click"/>
             </StackPanel>
         </Grid>
-
         <!-- Sportok gombok sáv -->
-        
-
-      
-
         <!-- Tartalom - 2 részre osztva -->
         <Grid Margin="0,50,0,0">
             <Grid.ColumnDefinitions>
