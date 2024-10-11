@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -45,7 +46,6 @@ namespace CasinoPRO
             this.PreviewMouseDown += MainWindow_PreviewMouseDown;
             Bets = new ObservableCollection<BetCartItem>();
             CartItemsControl.ItemsSource = Bets;
-            FinalizeBetCommand = new RelayCommand(FinalizeBet);
         }
         private void Admin_Click(object sender, RoutedEventArgs e)
         { 
@@ -523,18 +523,60 @@ namespace CasinoPRO
         }
 
         // Fogadás véglegesítése
-        private void FinalizeBet(object bet)
+        private void FinalizeBet_CLick(object sender, RoutedEventArgs e)
         {
-            
-            var betItem = bet as BetCartItem;
-            if (betItem != null)
-            {
-                // Finalize the bet (e.g., save to database or show a message)
-                MessageBox.Show($"Bet on {betItem.TeamName} finalized with amount: {betItem.BetAmount}");
 
-                // Remove the bet from the list after finalization
-                Bets.Remove(betItem);
+            if (sender is Button button && button.DataContext is BetCartItem betItem)
+            {
+                // Levonás az egyenlegből
+
+
+                // Tét eltávolítása a kosárból
+                
+                if (balance >= betItem.BetAmount)
+                {
+                    balance -= betItem.BetAmount; // Subtract amount from balance
+                    BalanceTxt.Content = $"{balance} HUF";
+                    try
+                    {
+                        // Get the logged-in user's username
+                        string loggedInUsername = SessionManager.LoggedInUsername;
+
+                        // Open database connection
+                        DatabaseConnection dbContext = new DatabaseConnection();
+                        MySqlConnection conn = dbContext.OpenConnection();
+
+                        if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                        {
+                            // Update query to modify the balance for the logged-in user
+                            string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
+                            MySqlCommand cmd = new MySqlCommand(query, conn);
+                            cmd.Parameters.AddWithValue("@balance", balance);
+                            cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                            // Execute the query
+                            cmd.ExecuteNonQuery();
+
+                            MessageBox.Show($"Sikeres fogadás: {betItem.BetAmount} HUF, egyenlege frissítve.");
+                            Bets.Remove(betItem);
+
+                        }
+
+                        // Close the connection
+                        dbContext.CloseConnection();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Hiba történt a fogadás során: " + ex.Message);
+                    }
+                    
+                }
+                else
+                {
+                    MessageBox.Show("Nincs elég egyenleged a fogadásra");
+                }
             }
+
         }
 
         // Eddigi fogadások megjelenítése
@@ -595,10 +637,7 @@ namespace CasinoPRO
 
                 mainGrid.Children.Add(betsPanel);
             }
-            if ()
-            {
-                
-            }
+            
         }
 
         // "Vissza" gomb eseménykezelője
