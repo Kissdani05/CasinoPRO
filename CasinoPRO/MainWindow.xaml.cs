@@ -54,25 +54,16 @@ namespace CasinoPRO
         }
             private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create and show the login page
+            // Login oldal elkészítése
             LoginPage loginPage = new LoginPage();
-
-            // Show the login window as a dialog
             bool? loginResult = loginPage.ShowDialog();
 
-            // Check if login was successful
+            // Login sikeres?
             if (loginResult == true)
             {
-                // Set the logged-in status only if the login is actually successful
                 isLoggedIn = true;
-
-                // Get the balance from the LoginPage and update it in MainWindow
-                balance = loginPage.UserBalance;  // Retrieve the balance from LoginPage
-
-                // Update balance in the UI
+                balance = loginPage.UserBalance; 
                 BalanceTxt.Content = balance.ToString() + " HUF";
-
-                // Call any other post-login actions
                 Bejelentkezes();
             }
         }
@@ -83,7 +74,6 @@ namespace CasinoPRO
         {
             if (isLoggedIn == true)
             {
-
                 try
                 {
                     DatabaseConnection dbContext = new DatabaseConnection();
@@ -99,9 +89,9 @@ namespace CasinoPRO
                         {
                             if (reader.Read())
                             {
-                                // Store the balance in the 'balance' variable and update the UI
+                                
                                 balance = Convert.ToDouble(reader["Balance"]);
-                                BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance in UI
+                                BalanceTxt.Content = balance.ToString() + " HUF"; 
                             }
                         }
                     }
@@ -111,14 +101,8 @@ namespace CasinoPRO
                 {
                     MessageBox.Show("Error loading balance: " + ex.Message);
                 }
-
-                // Hide the login button
                 LoginButton.Visibility = Visibility.Collapsed;
-
-                // Show the user icon
                 UserIcon.Visibility = Visibility.Visible;
-
-                // Dynamically create the username label (TextBlock)
                 usernameTextBlock = new TextBlock
                 {
                     Text = $"Welcome, {SessionManager.LoggedInUsername}",
@@ -127,13 +111,9 @@ namespace CasinoPRO
                     Margin = new Thickness(10),
                     Visibility = Visibility.Collapsed
                 };
-
-                // Add the dynamic username label to your UI (for example, a StackPanel)
                 UserSidebar.Children.Add(usernameTextBlock);
             }
             }
-        // Globális változók létrehozása a TextBlock-ok és TextBox-okhoz
-
         private void AdataimButton_Click(object sender, RoutedEventArgs e)
         {
             Grid mainGrid = this.Content as Grid;
@@ -186,10 +166,8 @@ namespace CasinoPRO
                         conn.Close();
                     }
                 }
-
                 balance = userBalance;
                 BalanceTxt.Content = balance.ToString() + " HUF";
-
                 StackPanel infoPanel = new StackPanel() { Name = "DynamicPanel", Margin = new Thickness(50) };
                 TextBlock header = new TextBlock
                 {
@@ -255,7 +233,6 @@ namespace CasinoPRO
             string newUserName = null;
             string newUserEmail = null;
             string loggedInUsername = SessionManager.LoggedInUsername;
-
             try
             {
                 DatabaseConnection dbContext = new DatabaseConnection();
@@ -263,12 +240,9 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    // Query to fetch username, email, and balance
                     string query = "SELECT Username, Email FROM Bettors WHERE Username = @username";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@username", loggedInUsername);
-
-                    // Execute the query and read data
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -290,28 +264,22 @@ namespace CasinoPRO
                     conn.Close();
                 }
             }
-
-
             usernameTextBox = new TextBox
             {
-                Text = $"{userName}", // Az aktuális felhasználónév
+                Text = $"{userName}", 
                 Margin = new Thickness(0, 5, 0, 5)
             };
 
             emailTextBox = new TextBox
             {
-                Text = $"{userEmail}", // Az aktuális e-mail cím
+                Text = $"{userEmail}", 
                 Margin = new Thickness(0, 5, 0, 5)
             };
-
-
-
             #region Test codes
             //A TextBlock-okat eltávolítjuk
             StackPanel parentPanel = usernameText.Parent as StackPanel;
             parentPanel.Children.Remove(usernameText);
             parentPanel.Children.Remove(emailText);
-
             //Hozzáadjuk a TextBox - okat
             parentPanel.Children.Insert(1, usernameTextBox);
             parentPanel.Children.Insert(2, emailTextBox);
@@ -338,9 +306,8 @@ namespace CasinoPRO
                     {
                         if (reader.Read())
                         {
-                            // Store the balance in the 'balance' variable and update the UI
                             balance = Convert.ToDouble(reader["Balance"]);
-                            BalanceTxt.Content = balance.ToString() + " HUF";  // Update balance in UI
+                            BalanceTxt.Content = balance.ToString() + " HUF";  
                         }
                     }
                 }
@@ -351,13 +318,11 @@ namespace CasinoPRO
                 MessageBox.Show("Error loading balance: " + ex.Message);
             }
         }
-
         // Mentés gomb eseménykezelője
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             string newUsername = usernameTextBox.Text;
             string newEmail = emailTextBox.Text;
-
             try
             {
                 DatabaseConnection dbContext = new DatabaseConnection();
@@ -365,39 +330,28 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    // Update the username and email in the database
                     string query = "UPDATE Bettors SET Username = @newUsername, Email = @newEmail WHERE Username = @oldUsername";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@newUsername", newUsername);
                     cmd.Parameters.AddWithValue("@newEmail", newEmail);
                     cmd.Parameters.AddWithValue("@oldUsername", SessionManager.LoggedInUsername);
                     cmd.ExecuteNonQuery();
-
-                    // Update SessionManager with the new username
                     SessionManager.LoggedInUsername = newUsername;
-
-                    // Refresh user balance or other data if needed
                     LoadUserBalance(newUsername);
                     MessageBox.Show("User information updated successfully!");
-
-                    // Update the dynamically generated username label (TextBlock)
                     if (usernameTextBlock != null)
                     {
                         usernameTextBlock.Text = $"Welcome, {newUsername}";
                     }
                 }
-
                 dbContext.CloseConnection();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error updating user data: " + ex.Message);
             }
-
-            // Update the UI elements to reflect the new data
             usernameText.Text = $"Felhasználónév: {newUsername}";
             emailText.Text = $"E-mail cím: {newEmail}";
-
             saveButton.Visibility = Visibility.Collapsed;
             editButton.Visibility = Visibility.Visible;
         }
@@ -415,13 +369,10 @@ namespace CasinoPRO
                 UserSidebar.Visibility = Visibility.Collapsed;
             }
         }
-
         private void MainWindow_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Ha a kattintás nem az oldalsó sávon történik, rejtse el azt
             if (UserSidebar.Visibility == Visibility.Visible)
             {
-                // Ellenőrizzük, hogy a kattintás az oldalsó sávon kívül történt-e
                 if (!IsMouseOverSidebar(e))
                 {
                     UserSidebar.Visibility = Visibility.Collapsed;
@@ -439,25 +390,21 @@ namespace CasinoPRO
         // Kijelentkezés logikája
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {
-            // Kijelentkezés művelet
-            UserSidebar.Visibility = Visibility.Collapsed; // Oldalsáv elrejtése
-            UserIcon.Visibility = Visibility.Collapsed; // Ikon elrejtése
+            UserSidebar.Visibility = Visibility.Collapsed;
+            UserIcon.Visibility = Visibility.Collapsed; 
             LoginButton.Visibility = Visibility.Visible;
-            isLoggedIn = false;// Bejelentkezés gomb megjelenítése
+            isLoggedIn = false;
             BalanceTxt.Content = "0 HUF";
         }
 
         private void CartButton_Click(object sender, RoutedEventArgs e)
         {
-            // Show the sidebar and overlay
             RightSidebar.Visibility = Visibility.Visible;
             RightSidebarOverlay.Visibility = Visibility.Visible;
         }
 
-        // This method handles clicking outside the sidebar (on the overlay)
         private void RightSidebarOverlay_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // Hide the sidebar and overlay when clicked outside
             RightSidebar.Visibility = Visibility.Collapsed;
             RightSidebarOverlay.Visibility = Visibility.Collapsed;
         }
@@ -465,7 +412,6 @@ namespace CasinoPRO
         // Fogadási lehetőségre kattintás esemény
         private void BetOption_Click(object sender, RoutedEventArgs e)
         {
-            
             if (!isLoggedIn)
             {
                 MessageBox.Show("You need to log in to deposit.");
@@ -479,7 +425,6 @@ namespace CasinoPRO
                 }
                 else
                 {
-                    // Handle case where user closes the login window without logging in
                     MessageBox.Show("Login was unsuccessful. Please try again.");
                 }
             }
@@ -487,9 +432,8 @@ namespace CasinoPRO
                 var button = sender as Button;
                 if (button != null)
                 {
-                    // Use button content (team name) to add a bet
                     string teamName = button.Content.ToString();
-                    OnTeamSelected(teamName); // Call the method to add the selected bet
+                    OnTeamSelected(teamName); 
                 }
             }
         }
@@ -497,7 +441,7 @@ namespace CasinoPRO
         // Csak számok beírásának engedélyezése
         private void BetAmount_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !int.TryParse(e.Text, out _); // Csak számok engedélyezése
+            e.Handled = !int.TryParse(e.Text, out _); 
         }
 
         private void OnTeamSelected(string teamName)
@@ -508,7 +452,7 @@ namespace CasinoPRO
                 var betItem = new BetCartItem
                 {
                     TeamName = teamName,
-                    BetAmount = 0 // Default value
+                    BetAmount = 0 
                 };
                 Bets.Add(betItem);
             }
@@ -520,60 +464,42 @@ namespace CasinoPRO
 
             if (sender is Button button && button.DataContext is BetCartItem betItem)
             {
-                // Levonás az egyenlegből
-
-
-                // Tét eltávolítása a kosárból
-                
                 if (balance >= betItem.BetAmount)
                 {
-                    balance -= betItem.BetAmount; // Subtract amount from balance
+                    balance -= betItem.BetAmount; 
                     BalanceTxt.Content = $"{balance} HUF";
                     try
                     {
-                        // Get the logged-in user's username
                         string loggedInUsername = SessionManager.LoggedInUsername;
-
-                        // Open database connection
                         DatabaseConnection dbContext = new DatabaseConnection();
                         MySqlConnection conn = dbContext.OpenConnection();
 
                         if (conn != null && conn.State == System.Data.ConnectionState.Open)
                         {
-                            // Update query to modify the balance for the logged-in user
                             string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
                             MySqlCommand cmd = new MySqlCommand(query, conn);
                             cmd.Parameters.AddWithValue("@balance", balance);
                             cmd.Parameters.AddWithValue("@username", loggedInUsername);
-
-                            // Execute the query
                             cmd.ExecuteNonQuery();
-
                             MessageBox.Show($"Sikeres fogadás: {betItem.BetAmount} HUF, egyenlege frissítve.");
                             Bets.Remove(betItem);
-
                         }
-
-                        // Close the connection
                         dbContext.CloseConnection();
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("Hiba történt a fogadás során: " + ex.Message);
                     }
-                    
                 }
                 else
                 {
                     MessageBox.Show("Nincs elég egyenleged a fogadásra");
                 }
             }
-
         }
 
         private void ClearDynamicPanels(Grid mainGrid)
         {
-            // Csak azokat az elemeket távolítjuk el, amelyeknek a neve "DynamicPanel"
             var dynamicPanels = mainGrid.Children
                                         .OfType<UIElement>()
                                         .Where(x => x is StackPanel && ((StackPanel)x).Name == "DynamicPanel")
@@ -584,22 +510,17 @@ namespace CasinoPRO
                 mainGrid.Children.Remove(panel);
             }
         }
-        // Eddigi fogadások megjelenítése
         private void EddigiFogadasaim_Click(object sender, RoutedEventArgs e)
         {
-            // Tartalom eltávolítása (kivéve a felső sávot)
             Grid mainGrid = this.Content as Grid;
             if (mainGrid != null)
             {
-                // Töröljük az előző dinamikus paneleket
                 ClearDynamicPanels(mainGrid);
                 DepositPanel.Visibility = Visibility.Collapsed;
                 BetOptionsPanel.Visibility = Visibility.Collapsed;
                 LiveBetsPanel.Visibility = Visibility.Collapsed;
                 OptionalBets.Visibility = Visibility.Collapsed;
                 UserSidebar.Visibility = Visibility.Collapsed;
-
-                // Új lista a fogadások megjelenítéséhez
                 StackPanel betsPanel = new StackPanel() { Name = "DynamicPanel", Margin = new Thickness(50) };
                 TextBlock header = new TextBlock
                 {
@@ -641,59 +562,43 @@ namespace CasinoPRO
                 };
                 backButton.Click += BackButton_Click;
                 betsPanel.Children.Add(backButton);
-
                 mainGrid.Children.Add(betsPanel);
             }
-
         }
-
-        // "Vissza" gomb eseménykezelője
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             Grid mainGrid = this.Content as Grid;
             if (mainGrid != null)
             {
-                // Töröljük az "Eddigi fogadásaim" oldal tartalmát
                 for (int i = mainGrid.Children.Count - 1; i >= 0; i--)
                 {
                     var element = mainGrid.Children[i];
-                    if (element is StackPanel) // Eltávolítjuk a fogadások oldalt
+                    if (element is StackPanel) 
                     {
-                        
                         element.Visibility = Visibility.Collapsed;
                     }
                 }
-                
-
-                // Főoldali elemek visszaállítása
-                
                 if (BetOptionsPanel != null && LiveBetsPanel != null && OptionalBets != null)
                 {
                     BetOptionsPanel.Visibility = Visibility.Visible;
                     LiveBetsPanel.Visibility = Visibility.Visible;
                     OptionalBets.Visibility = Visibility.Visible;
-
                 }
             }
         }
-
         private void ShowDepositPanel_Click(object sender, RoutedEventArgs e)
         {
             Grid mainGrid = this.Content as Grid;
             if (mainGrid != null)
             {
-                // Töröljük az előző dinamikus paneleket
                 ClearDynamicPanels(mainGrid);
 
                 if (isLoggedIn == true)
                 {
-                    // Elrejtjük a többi panelt
                     BetOptionsPanel.Visibility = Visibility.Collapsed;
                     LiveBetsPanel.Visibility = Visibility.Collapsed;
                     OptionalBets.Visibility = Visibility.Collapsed;
                     UserSidebar.Visibility = Visibility.Collapsed;
-
-                    // Megjelenítjük a DepositPanel-t
                     DepositPanel.Visibility = Visibility.Visible;
                 }
                 else
@@ -708,20 +613,15 @@ namespace CasinoPRO
                     }
                     else
                     {
-                        // Ha a felhasználó bezárja a bejelentkező ablakot, és nem jelentkezik be
                         MessageBox.Show("Login was unsuccessful. Please try again.");
                     }
                 }
             }
         }
 
-
         private void BackFromDeposit_Click(object sender, RoutedEventArgs e)
         {
-            // Rejtsd el a befizetési panelt
             DepositPanel.Visibility = Visibility.Collapsed;
-
-            // Visszaállítod a fő UI elemeket
             BetOptionsPanel.Visibility = Visibility.Visible;
             LiveBetsPanel.Visibility = Visibility.Visible;
             OptionalBets.Visibility = Visibility.Visible;
@@ -731,46 +631,29 @@ namespace CasinoPRO
         {
             if (int.TryParse(DepositAmount.Text, out int depositAmount) && depositAmount > 0)
             {
-                // Befizetési összeg hozzáadása a balance-hoz
                 balance += depositAmount;
-
-                // Frissítjük a balance kijelzését
                 BalanceTxt.Content = balance.ToString("") + " HUF";
-
-                // Update the balance in the database
                 try
                 {
-                    // Get the logged-in user's username
                     string loggedInUsername = SessionManager.LoggedInUsername;
                     MessageBox.Show(loggedInUsername);
-
-                    // Open database connection
                     DatabaseConnection dbContext = new DatabaseConnection();
                     MySqlConnection conn = dbContext.OpenConnection();
-
                     if (conn != null && conn.State == System.Data.ConnectionState.Open)
                     {
-                        // Update query to modify the balance for the logged-in user
                         string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
                         MySqlCommand cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@balance", balance);
                         cmd.Parameters.AddWithValue("@username", loggedInUsername);
-
-                        // Execute the query
                         cmd.ExecuteNonQuery();
-
                         MessageBox.Show($"Sikeresen befizetett {depositAmount} HUF, egyenlege frissítve.");
                     }
-
-                    // Close the connection
                     dbContext.CloseConnection();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Hiba történt a befizetés során: " + ex.Message);
                 }
-
-                // Rejtsd el a befizetési panelt és térj vissza a fő UI-hoz
                 DepositPanel.Visibility = Visibility.Collapsed;
                 BetOptionsPanel.Visibility = Visibility.Visible;
                 LiveBetsPanel.Visibility = Visibility.Visible;
@@ -889,8 +772,6 @@ namespace CasinoPRO
                 mainGrid.Children.Add(kifizetesPanel);
             }
         }
-
-
         // Gombok létrehozása a fogadási lehetőségekhez
         private Button CreateBetButton(string content)
         {
