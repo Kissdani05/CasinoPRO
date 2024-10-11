@@ -1,208 +1,209 @@
 ﻿<Window x:Class="CasinoPRO.LoginPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
-      Title="LoginPage"
-      >
-    <Grid Margin="20" Background="DimGray">
-        <Grid x:Name="LoginGrid" Margin="20">
-            <TextBlock Text="LOGO" 
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Top" 
-                       Foreground="Black" 
-                       FontSize="16" 
-                       Margin="0,10,0,0"/>
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="LoginPage" Height="700" Width="400"
+        Background="{StaticResource BackgroundBrush}">
 
-            <!-- Felhasználónév vagy email cím -->
-            <TextBlock Text="Felhasználónév vagy e-mail cím" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,50,0,0" 
-                       Foreground="White"/>
-            <TextBox x:Name="UsernameTextBox" 
-                     HorizontalAlignment="Stretch" 
-                     VerticalAlignment="Top" 
-                     Height="30" 
-                     Margin="0,75,0,0" 
-                     Background="#34495E" 
-                     Foreground="White" 
-                     BorderBrush="White" 
-                     Padding="10" 
-                     FontSize="7" />
+    <!-- ScrollViewer added to allow scrolling -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Background="{StaticResource PrimaryBrush}" >
+            <!-- Login Grid -->
+            <Grid x:Name="LoginGrid" Margin="40">
+                <!-- Logo -->
+                <TextBlock Text="LOGO" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Top" 
+                           Foreground="{StaticResource ForegroundBrush}" 
+                           FontSize="20" 
+                           Margin="0,20,0,20"/>
 
-            <!-- Jelszó mező -->
-            <PasswordBox x:Name="PasswordTextBox" 
+                <!-- Username or email -->
+                <TextBlock Text="Felhasználónév vagy e-mail cím" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,70,0,10" />
+                <TextBox x:Name="UsernameTextBox" 
                          HorizontalAlignment="Stretch" 
                          VerticalAlignment="Top" 
-                         Height="30" 
-                         Margin="0,145,0,0" 
-                         Background="#34495E" 
-                         Foreground="White" 
-                         BorderBrush="#34495E" 
-                         Padding="10" 
-                         FontSize="14"/>
+                         Height="45" 
+                         FontSize="16"
+                         Margin="0,100,0,0" 
+                         Background="White" 
+                         Foreground="Black" 
+                         BorderBrush="{StaticResource PrimaryBrush}" 
+                         Padding="10" />
 
-            <TextBlock Text="Jelszó" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,120,0,0" 
-                       Foreground="LightGray" />
+                <!-- Password field -->
+                <TextBlock Text="Jelszó" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,180,0,10" />
+                <PasswordBox x:Name="PasswordTextBox" 
+                             HorizontalAlignment="Stretch" 
+                             VerticalAlignment="Top" 
+                             Height="45" 
+                             FontSize="16"
+                             Margin="0,210,0,0" 
+                             Background="White" 
+                             Foreground="Black" 
+                             BorderBrush="{StaticResource PrimaryBrush}" 
+                             Padding="10" />
 
-            <!-- Elfelejtett jelszó -->
-            <TextBlock HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,190,0,0" 
-                       Foreground="DarkGray">
-                <Hyperlink x:Name="ForgotPasswordLink" Click="ForgotPassword_Click">Elfelejtettem a jelszavam</Hyperlink>
-            </TextBlock>
+                <!-- Forgot password -->
+                <TextBlock HorizontalAlignment="Left" 
+                           VerticalAlignment="Top" 
+                           Margin="0,280,0,0" 
+                           Foreground="DarkGray">
+                    <Hyperlink x:Name="ForgotPasswordLink" Click="ForgotPassword_Click" Foreground="{StaticResource AccentBrush}">
+                        Elfelejtettem a jelszavam
+                    </Hyperlink>
+                </TextBlock>
 
-            <!-- Bejelentkezés gomb -->
-            <Button x:Name="ActionButton" 
-                    Content="BEJELENTKEZÉS" 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Top" 
-                    Height="40" 
-                    Margin="0,230,0,0" 
-                    Background="#BDC3C7" 
-                    Foreground="#2C3E50" 
-                    FontSize="14" 
-                    BorderBrush="#BDC3C7" 
-                    Click="ActionButton_Click"/>
+                <!-- Login button -->
+                <Button x:Name="ActionButton" 
+                        Content="BEJELENTKEZÉS" 
+                        Style="{StaticResource ModernButton}" 
+                        FontSize="18"
+                        Margin="0,330,0,0" 
+                        Height="50"
+                        Click="ActionButton_Click"/>
 
-            <!-- Regisztráció link -->
-            <TextBlock HorizontalAlignment="Center" 
-                       VerticalAlignment="Top" 
-                       Margin="0,290,0,0" 
-                       Foreground="LightGray">
-                Még nincs CASINOPRO fiókod? 
-                <Hyperlink x:Name="RegisterLink" Click="RegisterLink_Click" Foreground="Orange">Regisztrálj!</Hyperlink>
-            </TextBlock>
+                <!-- Registration link -->
+                <TextBlock HorizontalAlignment="Center" 
+                           VerticalAlignment="Top" 
+                           Margin="0,400,0,0" 
+                           Foreground="LightGray">
+                    Még nincs CASINOPRO fiókod? 
+                    <Hyperlink x:Name="RegisterLink" Click="RegisterLink_Click" Foreground="{StaticResource AccentBrush}">
+                        Regisztrálj!
+                    </Hyperlink>
+                </TextBlock>
 
-            <!-- Bezárás gomb (jobb felső sarokban) -->
-            <Button Content="X" 
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Top" 
-                    Background="Transparent" 
-                    Foreground="White" 
-                    BorderBrush="Transparent" 
-                    FontSize="16" 
-                    Width="30" 
-                    Height="30" 
-                    Click="CloseButton_Click"/>
+                <!-- Close button -->
+                <Button Content="X" 
+                        HorizontalAlignment="Right" 
+                        VerticalAlignment="Top" 
+                        Background="Transparent" 
+                        Foreground="{StaticResource ForegroundBrush}" 
+                        BorderBrush="Transparent" 
+                        FontSize="16" 
+                        Width="30" 
+                        Height="30" 
+                        Click="CloseButton_Click"/>
+            </Grid>
+
+            <!-- Registration Grid -->
+            <Grid x:Name="RegistrationGrid" Visibility="Collapsed" Margin="40">
+                <TextBlock Text="Regisztráció" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Top" 
+                           FontSize="20"
+                           Margin="0,20,0,20"/>
+
+                <!-- Username -->
+                <TextBlock Text="Felhasználónév" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,70,0,10" />
+                <TextBox x:Name="RegisterUsernameTextBox" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalAlignment="Top" 
+                         Height="45" 
+                         FontSize="16"
+                         Margin="0,100,0,0" 
+                         Background="White" 
+                         Foreground="Black" 
+                         BorderBrush="{StaticResource PrimaryBrush}" 
+                         Padding="10" />
+
+                <!-- Email -->
+                <TextBlock Text="E-mail cím" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,180,0,10" />
+                <TextBox x:Name="RegisterEmailTextBox" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalAlignment="Top" 
+                         Height="45" 
+                         FontSize="16"
+                         Margin="0,210,0,0" 
+                         Background="White" 
+                         Foreground="Black" 
+                         BorderBrush="{StaticResource PrimaryBrush}" 
+                         Padding="10" />
+
+                <!-- Confirm Email -->
+                <TextBlock Text="E-mail cím megerősítése" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,290,0,10" />
+                <TextBox x:Name="ConfirmEmailTextBox" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalAlignment="Top" 
+                         Height="45" 
+                         FontSize="16"
+                         Margin="0,320,0,0" 
+                         Background="White" 
+                         Foreground="Black" 
+                         BorderBrush="{StaticResource PrimaryBrush}" 
+                         Padding="10" />
+
+                <!-- Password -->
+                <TextBlock Text="Jelszó" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,400,0,10" />
+                <PasswordBox x:Name="RegisterPasswordTextBox" 
+                             HorizontalAlignment="Stretch" 
+                             VerticalAlignment="Top" 
+                             Height="45" 
+                             FontSize="16"
+                             Margin="0,430,0,0" 
+                             Background="White" 
+                             Foreground="Black" 
+                             BorderBrush="{StaticResource PrimaryBrush}" 
+                             Padding="10" />
+
+                <!-- Confirm Password -->
+                <TextBlock Text="Jelszó megerősítése" 
+                           Style="{StaticResource ModernTextBlock}" 
+                           FontSize="16"
+                           Margin="0,510,0,10" />
+                <PasswordBox x:Name="ConfirmPasswordTextBox" 
+                             HorizontalAlignment="Stretch" 
+                             VerticalAlignment="Top" 
+                             Height="45" 
+                             FontSize="16"
+                             Margin="0,540,0,0" 
+                             Background="White" 
+                             Foreground="Black" 
+                             BorderBrush="{StaticResource PrimaryBrush}" 
+                             Padding="10" />
+
+                <!-- Registration button -->
+                <Button x:Name="RegisterButton" 
+                        Content="Regisztráció" 
+                        Style="{StaticResource ModernButton}" 
+                        FontSize="18"
+                        Margin="0,620,0,0" 
+                        Height="50"
+                        Click="RegisterButton_Click"/>
+
+                <!-- Back to login link -->
+                <TextBlock HorizontalAlignment="Center" 
+                           VerticalAlignment="Top" 
+                           Margin="0,690,0,0" 
+                           Foreground="LightGray">
+                    Már van fiókod? 
+                    <Hyperlink x:Name="BackToLoginLink" Click="BackToLogin_Click" Foreground="{StaticResource AccentBrush}">
+                        Bejelentkezés
+                    </Hyperlink>
+                </TextBlock>
+            </Grid>
         </Grid>
-
-        <!-- Registration Grid -->
-        <Grid x:Name="RegistrationGrid" Visibility="Collapsed" Margin="20">
-            <TextBlock Text="Regisztráció" 
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Top" 
-                       Foreground="Black" 
-                       FontSize="16" 
-                       Margin="0,10,0,0"/>
-
-            <!-- Felhasználónév -->
-            <TextBlock Text="Felhasználónév" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,50,0,0" 
-                       Foreground="White"/>
-            <TextBox x:Name="RegisterUsernameTextBox" 
-                     HorizontalAlignment="Stretch" 
-                     VerticalAlignment="Top" 
-                     Height="30" 
-                     Margin="0,75,0,0" 
-                     Background="#34495E" 
-                     Foreground="White" 
-                     BorderBrush="White" 
-                     Padding="10"/>
-
-            <!-- E-mail -->
-            <TextBlock Text="E-mail cím" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,120,0,0" 
-                       Foreground="White"/>
-            <TextBox x:Name="RegisterEmailTextBox" 
-                     HorizontalAlignment="Stretch" 
-                     VerticalAlignment="Top" 
-                     Height="30" 
-                     Margin="0,145,0,0" 
-                     Background="#34495E" 
-                     Foreground="White" 
-                     BorderBrush="White" 
-                     Padding="10"/>
-
-            <!-- E-mail megerősítés -->
-            <TextBlock Text="E-mail cím megerősítése" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,190,0,0" 
-                       Foreground="White"/>
-            <TextBox x:Name="ConfirmEmailTextBox" 
-                     HorizontalAlignment="Stretch" 
-                     VerticalAlignment="Top" 
-                     Height="30" 
-                     Margin="0,215,0,0" 
-                     Background="#34495E" 
-                     Foreground="White" 
-                     BorderBrush="White" 
-                     Padding="10"/>
-
-            <!-- Jelszó -->
-            <TextBlock Text="Jelszó" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,260,0,0" 
-                       Foreground="White"/>
-            <PasswordBox x:Name="RegisterPasswordTextBox" 
-                         HorizontalAlignment="Stretch" 
-                         VerticalAlignment="Top" 
-                         Height="30" 
-                         Margin="0,285,0,0" 
-                         Background="#34495E" 
-                         Foreground="White" 
-                         BorderBrush="White" 
-                         Padding="10"/>
-
-            <!-- Jelszó megerősítés -->
-            <TextBlock Text="Jelszó megerősítése" 
-                       HorizontalAlignment="Left" 
-                       VerticalAlignment="Top" 
-                       Margin="0,330,0,0" 
-                       Foreground="White"/>
-            <PasswordBox x:Name="ConfirmPasswordTextBox" 
-                         HorizontalAlignment="Stretch" 
-                         VerticalAlignment="Top" 
-                         Height="30" 
-                         Margin="0,355,0,0" 
-                         Background="#34495E" 
-                         Foreground="White" 
-                         BorderBrush="White" 
-                         Padding="10"/>
-
-            <!-- Regisztráció gomb -->
-            <Button x:Name="RegisterButton" 
-                    Content="Regisztráció" 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Top" 
-                    Height="40" 
-                    Margin="0,400,0,0" 
-                    Background="#BDC3C7" 
-                    Foreground="#2C3E50" 
-                    FontSize="14" 
-                    BorderBrush="#BDC3C7" 
-                    Click="RegisterButton_Click"/>
-
-            <!-- Vissza a bejelentkezéshez link -->
-            <TextBlock HorizontalAlignment="Center" 
-                       VerticalAlignment="Top" 
-                       Margin="0,460,0,0" 
-                       Foreground="LightGray">
-                Már van fiókod? 
-                <Hyperlink x:Name="BackToLoginLink" Click="BackToLogin_Click" Foreground="Orange">Bejelentkezés</Hyperlink>
-            </TextBlock>
-        </Grid>
-    </Grid>
+    </ScrollViewer>
 </Window>

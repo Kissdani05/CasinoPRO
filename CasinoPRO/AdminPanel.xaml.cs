@@ -219,6 +219,12 @@ namespace CasinoPRO
             }
         }
         // Profilok gomb kezelése
+
+        private void UjProfil_Click(object sender, EventArgs e)
+        {
+            NewProfileAdd newProfileAdd = new NewProfileAdd();
+            newProfileAdd.Show();
+        }
         private void Profilok_Click(object sender, RoutedEventArgs e)
         {
             ProfileGrid.Visibility = Visibility.Visible;

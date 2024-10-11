@@ -11,29 +11,20 @@
         <Frame Name="MainFrame" NavigationUIVisibility="Hidden" />
 
         <!-- Felső sáv -->
-        <DockPanel LastChildFill="True" Height="50" VerticalAlignment="Top" Background="LightGray">
-            <!-- Bejelentkezés gomb -->
-            <Button Content="Bejelentkezés" DockPanel.Dock="Left" Width="100" Margin="10,0" VerticalAlignment="Center" x:Name="LoginButton" Click="LoginButton_Click"/>
-
-            <!-- Felhasználói ikon, alapból rejtve -->
-            <Button Content="👤" DockPanel.Dock="Left" Width="50" Margin="10,0" VerticalAlignment="Center" x:Name="UserIcon" Click="UserIcon_Click" Visibility="Collapsed"/>
-
-            <!-- Logó -->
-            <Label Content="LOGO" DockPanel.Dock="Left" Width="100" VerticalAlignment="Center" HorizontalAlignment="Center"
-            FontSize="16" FontWeight="Bold"/>
-
-            <!-- Balance -->
-            <Label Content="Balance: " DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="20,0,5,0"/>
-            <Label x:Name="BalanceTxt"  DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="14" Margin="0,0,20,0" Content="0 HUF"/>
-
-            <!-- Befizetés gomb -->
-            <Button Content="Befizetés" DockPanel.Dock="Left" Width="100" Margin="10,0" VerticalAlignment="Center" Click="ShowDepositPanel_Click"/>
-            <Button Content="Admin" Click="Admin_Click"/>
-            <Button Content="Organizer" Click="Organizer_Click"/>
-            <Button Name="CartButton" VerticalAlignment="Center" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="10, 0" Click="CartButton_Click">
-                <Label Content="CART" Width="50" Height="30"/>
+        <DockPanel VerticalAlignment="Top" LastChildFill="True" Style="{StaticResource TopBarStyle}">
+            <Button DockPanel.Dock="Left" VerticalAlignment="Center" Content="Bejelentkezés" Style="{StaticResource ModernButton}" x:Name="LoginButton" Click="LoginButton_Click"/>
+            <Button Content="👤" VerticalAlignment="Center" Style="{StaticResource ModernButton}" Visibility="Collapsed" DockPanel.Dock="Left" x:Name="UserIcon" Click="UserIcon_Click"/>
+            <Label DockPanel.Dock="Left" VerticalAlignment="Center" Content="LOGO" Style="{StaticResource ModernLabel}"/>
+            <Label DockPanel.Dock="Left" VerticalAlignment="Center"  Content="Egyenleg: " Style="{StaticResource ModernLabel}" />
+            <Label x:Name="BalanceTxt" VerticalAlignment="Center" DockPanel.Dock="Left"  Style="{StaticResource ModernLabel}" Content="0 HUF"/>
+            <Button Content="Befizetés" VerticalAlignment="Center" Style="{StaticResource ModernButton}" Click="ShowDepositPanel_Click" DockPanel.Dock="Left"/>
+            <Button Content="Admin" VerticalAlignment="Center" Style="{StaticResource ModernButton}" Click="Admin_Click" />
+            <Button Content="Organizer" VerticalAlignment="Center" Style="{StaticResource ModernButton}" Click="Organizer_Click" />
+            <Button Name="CartButton" VerticalAlignment="Center" Style="{StaticResource ModernButton}" DockPanel.Dock="Top" Click="CartButton_Click">
+                <Label Content="KOSÁR" />
             </Button>
         </DockPanel>
+
         <!-- Overlay that covers the entire window, initially hidden -->
         <!-- Overlay that covers the entire window, initially hidden -->
         <Border Name="RightSidebarOverlay" Background="Transparent" Visibility="Collapsed" MouseDown="RightSidebarOverlay_MouseDown"/>
