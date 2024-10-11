@@ -1,5 +1,4 @@
 - admin összekapcsolása belépéssel
-- profil lehetőségekre kattintva töröljön mindent
 - Ne név alapján teszteljünk hanem ID alapján
 - fogadasi lehetosegek betoltese adminba es alapba
 - elo legjobb adminbol beimportalni
