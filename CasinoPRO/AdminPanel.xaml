@@ -61,6 +61,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+                            <Button Click="UjProfil_Click" Grid.Row="3" Content="Új profil hozzáadása" Width="150" Margin="10" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
         </Grid>
     </Grid>
 </Window>
