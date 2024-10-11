@@ -188,14 +188,25 @@ namespace CasinoPRO
             }
         }
 
-        private void SaveUser_Click()
+        private void SaveUser_Click(object sender, RoutedEventArgs e)
         {
-            int bettorID = 0;
-            string userName = null;
-            double userBalance = 0;  // Store the fetched balance
-            string userEmail = null;
-            bool isActive = false;
-            string role = null;
+            Button SaveBtn = sender as Button;
+            StackPanel stk = SaveBtn.Parent as StackPanel;
+            TextBlock IdTextB = stk.Children[0] as TextBlock;
+            TextBox NameTextB = stk.Children[1] as TextBox;
+            TextBox BalanceTextB = stk.Children[2] as TextBox;
+            TextBox EmailTextB = stk.Children[3] as TextBox;
+            TextBox JoinDateTextB = stk.Children[4] as TextBox;
+            CheckBox IsActiveTextB = stk.Children[5] as CheckBox;
+            TextBox RoleTextB = stk.Children[6] as TextBox;
+
+            int bettorID = Convert.ToInt32(IdTextB.Text);
+            string userName = NameTextB.Text;
+            double userBalance = Convert.ToDouble(BalanceTextB.Text);  // Store the fetched balance
+            string userEmail = EmailTextB.Text;
+            DateTime joinDate = Convert.ToDateTime(JoinDateTextB.Text);
+            bool isActive = Convert.ToBoolean(IsActiveTextB.IsChecked);
+            string role = RoleTextB.Text;
             string loggedInUsername = SessionManager.LoggedInUsername; // Logged in username
             try
             {
@@ -204,21 +215,19 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    // Update the username and email in the database
-                    string query = "UPDATE Bettors SET Username = @userName, Email = @newEmail, UserBalance = @userBalance, IsActive = @isActive, Role = @role";
+                    string query = "UPDATE Bettors SET Username = @userName, Email = @newEmail, Balance = @userBalance, IsActive = @isActive, Role = @role Where BettorsID = @id";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@userName", userName);
                     cmd.Parameters.AddWithValue("@newEmail", userEmail);
-                    cmd.Parameters.AddWithValue("@oldUsername", SessionManager.LoggedInUsername);
+                    cmd.Parameters.AddWithValue("@userBalance", userBalance);
+                    cmd.Parameters.AddWithValue("@isActive", isActive);
+                    cmd.Parameters.AddWithValue("@role", role);
+                    cmd.Parameters.AddWithValue("@id", bettorID);
                     cmd.ExecuteNonQuery();
 
-                    // Update SessionManager with the new username
                     SessionManager.LoggedInUsername = userName;
 
-                    // Refresh user balance or other data if needed
-
-
-                    // Update the dynamically generated username label (TextBlock)
+                    MessageBox.Show("User updated successfully!");
 
                 }
 
