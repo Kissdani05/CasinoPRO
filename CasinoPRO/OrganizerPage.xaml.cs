@@ -248,16 +248,12 @@ namespace CasinoPRO
 
         }
         // Profilok gomb kezelése
-        private void Profilok_Click(object sender, RoutedEventArgs e)
-        {
-            SportsGrid.Visibility = Visibility.Collapsed;
-            ProfileGrid.Visibility = Visibility.Visible;
-        }
+        
 
         // Sportok gomb kezelése
         private void Sportok_Click(object sender, RoutedEventArgs e)
         {
-            ProfileGrid.Visibility = Visibility.Collapsed;
+           
             SportsGrid.Visibility = Visibility.Visible;
         }
 
