@@ -250,6 +250,8 @@ namespace CasinoPRO
             Grid mainGrid = this.Content as Grid;
             mainGrid.Children.Add(infoPanel);
             #endregion
+
+
         }
 
         // Módosítás gomb eseménykezelője
@@ -592,6 +594,10 @@ namespace CasinoPRO
                 betsPanel.Children.Add(backButton);
 
                 mainGrid.Children.Add(betsPanel);
+            }
+            if ()
+            {
+                
             }
         }
 

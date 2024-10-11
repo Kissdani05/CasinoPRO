@@ -50,13 +50,13 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="10">
-                            <TextBlock Text="{Binding Id}" Width="50" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <TextBox Text="{Binding Name}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <TextBox Text="{Binding Balance}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <TextBox Text="{Binding Email}" Width="150" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <TextBox Text="{Binding JoinDate}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <CheckBox IsChecked="{Binding IsActive}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <TextBox Text="{Binding Role}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock Text="{Binding Id}" Width="50" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Id_TxtB"/>
+                            <TextBox Text="{Binding Name}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Name_TxtB"/>
+                            <TextBox Text="{Binding Balance}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Balance_TxtB"/>
+                            <TextBox Text="{Binding Email}" Width="150" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Email_TxtB"/>
+                            <TextBox Text="{Binding JoinDate}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="JoinDate_TxtB"/>
+                            <CheckBox IsChecked="{Binding IsActive}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Active_Check"/>
+                            <TextBox Text="{Binding Role}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="Role_TxtB"/>
 
                             <Button Content="Mentés" Width="75" Margin="5" VerticalAlignment="Center"/>
                             <Button Content="Törlés" Width="75" Margin="5" VerticalAlignment="Center"/>
