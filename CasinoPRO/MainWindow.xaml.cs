@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using CasinoPRO.Models;
 namespace CasinoPRO
 {
     /// <summary>
@@ -26,6 +26,7 @@ namespace CasinoPRO
         public ICommand FinalizeBetCommand { get; set; }
         private List<string> finalizedBets = new List<string>();
         public ObservableCollection<BetCartItem> Bets { get; set; }
+
         TextBlock usernameText;
         TextBlock emailText;
         TextBox usernameTextBox;
@@ -40,12 +41,15 @@ namespace CasinoPRO
             public double BetAmount { get; set; }
         }
 
+        public ObservableCollection<Matches> Match { get; set; }
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
             this.PreviewMouseDown += MainWindow_PreviewMouseDown;
             Bets = new ObservableCollection<BetCartItem>();
             CartItemsControl.ItemsSource = Bets;
+            LoadEvents();
         }
         private void Admin_Click(object sender, RoutedEventArgs e)
         { 
@@ -323,6 +327,7 @@ namespace CasinoPRO
         {
             string newUsername = usernameTextBox.Text;
             string newEmail = emailTextBox.Text;
+            Match = new();
             try
             {
                 DatabaseConnection dbContext = new DatabaseConnection();
@@ -409,7 +414,90 @@ namespace CasinoPRO
             RightSidebarOverlay.Visibility = Visibility.Collapsed;
         }
 
-        // Fogadási lehetőségre kattintás esemény
+
+        public void LoadEvents()
+        {
+            MySqlConnection conn = null;
+            string eventName = null;
+            DateTime eventDate = DateTime.MinValue;
+            string category = null;
+            string location = null;
+            Match = new ObservableCollection<Matches>();
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT EventName, EventDate, Category, Location FROM events";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // Retrieve data from each column
+                            eventName = reader["EventName"].ToString();
+                            category = reader["Category"].ToString();
+                            location = reader["Location"].ToString();
+
+                            // Handle nullable EventDate
+                            if (!reader.IsDBNull(reader.GetOrdinal("EventDate")))
+                            {
+
+                                try
+                                {
+                                    eventDate = Convert.ToDateTime(reader["EventDate"]);
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    // Log the actual JoinDate value for debugging
+                                    string rawJoinDate = reader["EventDate"].ToString();
+                                    MessageBox.Show($"Error parsing JoinDate: {rawJoinDate}. Exception: {innerEx.Message}");
+
+                                    // Use TryParse for manual parsing as a fallback
+                                    if (DateTime.TryParse(rawJoinDate, out DateTime parsedDate))
+                                    {
+                                        eventDate = parsedDate;
+                                    }
+                                    else
+                                    {
+                                        eventDate = DateTime.MinValue; // Fallback to a default value
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                eventDate = DateTime.MinValue;  // Default value
+                            }
+
+                            // Add the event data to the Match collection
+                            Match.Add(new Matches
+                            {
+                                EventName = eventName,
+                                EventDate = eventDate,
+                                Category = category,
+                                Location = location
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading events: " + ex.Message);
+            }
+            finally
+            {
+                // Ensure the connection is closed after use
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+            }
+        }
+        //Fogadási lehetőségre kattintás esemény
         private void BetOption_Click(object sender, RoutedEventArgs e)
         {
             if (!isLoggedIn)
@@ -417,7 +505,7 @@ namespace CasinoPRO
                 MessageBox.Show("You need to log in to deposit.");
                 LoginPage loginPage = new LoginPage();
                 bool? loginResult = loginPage.ShowDialog();
-                
+
                 if (loginResult == true)
                 {
                     isLoggedIn = true;
@@ -428,12 +516,13 @@ namespace CasinoPRO
                     MessageBox.Show("Login was unsuccessful. Please try again.");
                 }
             }
-            else {
+            else
+            {
                 var button = sender as Button;
                 if (button != null)
                 {
                     string teamName = button.Content.ToString();
-                    OnTeamSelected(teamName); 
+                    OnTeamSelected(teamName);
                 }
             }
         }

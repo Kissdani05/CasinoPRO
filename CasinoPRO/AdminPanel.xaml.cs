@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ZstdSharp.Unsafe;
 using CasinoPRO.Models;
+using System.Text.RegularExpressions;
 
 namespace CasinoPRO
 {
@@ -15,6 +16,7 @@ namespace CasinoPRO
         public AdminPanel()
         {
             InitializeComponent();
+            
             LoadUsersFromDatabase();
             DataContext = this;
         }
