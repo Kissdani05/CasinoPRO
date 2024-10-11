@@ -61,6 +61,51 @@ namespace CasinoPRO
 
             return isValid;
         }
+        public bool ValidateAdmin(string username)
+        {
+            bool isAdmin = false;
+
+            MySqlConnection conn = null;
+
+            try
+            {
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT Role FROM Bettors WHERE Username = @username AND IsActive = 1";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    string role = null;
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            role = reader["Role"].ToString();
+                        }
+                    }
+
+                    if (role.ToLower() == "admin")
+                    {
+                        isAdmin = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error during login validation: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    dbContext.CloseConnection();
+                }
+            }
+
+            return isAdmin;
+        }
 
         private void LoadUserBalance(string username)
         {
@@ -94,27 +139,47 @@ namespace CasinoPRO
         // Bejelentkezés gomb eseménykezelő
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {
-
             string username = UsernameTextBox.Text;
             string password = PasswordTextBox.Password;
 
             // Call ValidateLogin to check if the login is valid
             bool isValid = ValidateLogin(username, password);
+            bool isAdmin = ValidateAdmin(username);
 
             if (isValid)
             {
-                // If login is successful, show success message
-                SessionManager.LoggedInUsername = username;
-                MessageBox.Show("Login successful!");
+                if (isAdmin)
+                {
+                    SessionManager.LoggedInUsername = username;
+                    MessageBox.Show("Login successful!");
 
-                // Load the user balance
-                LoadUserBalance(username);
+                    AdminPanel adminPanel = new AdminPanel();
+                    adminPanel.Show();
 
-                // Set DialogResult to true to signal successful login
-                this.DialogResult = true;
+                    var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                    if (mainWindow != null)
+                    {
+                        mainWindow.Close();
+                    }
 
-                // Close the login window and pass control back to MainWindow
-                this.Close();
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {      
+                    // If login is successful, show success message
+                    SessionManager.LoggedInUsername = username;
+                    MessageBox.Show("Login successful!");
+
+                    // Load the user balance
+                    LoadUserBalance(username);
+
+                    // Set DialogResult to true to signal successful login
+                    this.DialogResult = true;
+
+                    // Close the login window and pass control back to MainWindow
+                    this.Close();
+                }
             }
             else
             {

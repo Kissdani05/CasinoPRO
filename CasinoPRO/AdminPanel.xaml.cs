@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using ZstdSharp.Unsafe;
 using CasinoPRO.Models;
 using System.Text.RegularExpressions;
+using System.Windows.Data;
 
 namespace CasinoPRO
 {
@@ -186,11 +187,14 @@ namespace CasinoPRO
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
                     // Query to fetch user information
-                    string query = "DELETE FROM Bettors Where BettorsID = @id";
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", bettorID);
+                    string deleteQuery = "DELETE FROM Bettors WHERE BettorsID = @id";
+                    MySqlCommand deleteCmd = new MySqlCommand(deleteQuery, conn);
+                    deleteCmd.Parameters.AddWithValue("@id", bettorID);
+                    deleteCmd.ExecuteNonQuery();
 
-                    cmd.ExecuteNonQuery();
+                    string resetProcedureQuery = "CALL reset_auto_increment_bettors();";
+                    MySqlCommand resetCmd = new MySqlCommand(resetProcedureQuery, conn);
+                    resetCmd.ExecuteNonQuery();
 
                     Profile profileToRemove = Profiles.FirstOrDefault(x => x.Id == bettorID);
 
@@ -224,8 +228,25 @@ namespace CasinoPRO
         {
             NewProfileAdd newProfileAdd = new NewProfileAdd();
             newProfileAdd.Show();
+
+            // Attach the OnClosing event handler to the new window's Closed event
+            newProfileAdd.Closed += OnClosing;
         }
-        private void Profilok_Click(object sender, RoutedEventArgs e)
+
+        public void OnClosing(object sender, EventArgs e)
+        {
+            // Add the newly created profile to the ObservableCollection
+            if (sender is NewProfileAdd newProfileAddWindow)
+            {
+                var newProfile = newProfileAddWindow.NewProfile; // Assuming you expose the new profile
+                if (newProfile != null)
+                {
+                    Profiles.Add(newProfile);
+                }
+            }
+        }
+
+        private void Profilok_Click(object sender, EventArgs e)
         {
             ProfileGrid.Visibility = Visibility.Visible;
         }
@@ -236,6 +257,8 @@ namespace CasinoPRO
         // Kijelentkezés
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            MainWindow mainwindow = new MainWindow();
+            mainwindow.Show();
             this.Close();
         }
     }

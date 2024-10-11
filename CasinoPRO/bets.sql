@@ -18,7 +18,7 @@ CREATE TABLE `Bettors` (
   `Email` VARCHAR(100) NOT NULL,
   `JoinDate` DATE NOT NULL,
   `IsActive` BOOLEAN NOT NULL DEFAULT 1,
-  `Role` ENUM ('User', 'Moderator', 'Admin') NOT NULL DEFAULT 'User'
+  `Role` ENUM ('User', 'Organizer', 'Admin') NOT NULL DEFAULT 'User'
 );
 
 CREATE TABLE `Events` (
@@ -33,10 +33,67 @@ ALTER TABLE `Bets` ADD FOREIGN KEY (`BettorsID`) REFERENCES `Bettors` (`BettorsI
 
 ALTER TABLE `Bets` ADD FOREIGN KEY (`EventID`) REFERENCES `Events` (`EventID`);
 
-INSERT INTO `bettors` (`BettorsID`, `Username`, `Password`, `Balance`, `Email`, `JoinDate`, `IsActive`, `Role`) VALUES
-(1, 'john', 'b7fcc6e612145267d2ffea04be754a34128c1ed8133a09bfbbabd6afe6327688aa71d47343dd36e719f35f30fa79aec540e91b81c214fddfe0bedd53370df46d', 1000, 'john@example.com', '2022-01-15', 1, 'user'),
-(2, 'jane', '1769722a9dc2fd3ae675264e61a51bd7359eb1346aa2f096e68513e78e86f4c68bee853ef7db764fff7ce707ef367a6644e71511ca3f31e52a4cbc02a1091e3c', 1500, 'jane@example.com', '2022-02-20', 1, 'organiser'),
-(3, 'admin', 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec', 5000, 'admin@example.com', '2021-12-01', 1, 'admin'),
+
+--AutoIncrement resets
+
+DELIMITER //
+
+CREATE PROCEDURE delete_bet_and_reset_ai(IN bet_id INT)
+BEGIN
+  DELETE FROM Bets WHERE BetsID = bet_id;
+  SET @new_auto_increment = (SELECT IFNULL(MAX(BetsID), 0) + 1 FROM Bets);
+  SET @query = CONCAT('ALTER TABLE Bets AUTO_INCREMENT = ', @new_auto_increment);
+  PREPARE stmt FROM @query;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE reset_auto_increment_bettors()
+BEGIN
+    DECLARE max_id INT;
+    SELECT IFNULL(MAX(BettorsID), 0) INTO max_id FROM Bettors;
+    IF max_id > 0 THEN
+        SET @query = CONCAT('ALTER TABLE Bettors AUTO_INCREMENT = ', max_id + 1);
+    ELSE
+        SET @query = 'ALTER TABLE Bettors AUTO_INCREMENT = 1';
+    END IF;
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE reset_auto_increment_events()
+BEGIN
+    DECLARE max_id INT;
+    SELECT IFNULL(MAX(EventID), 0) INTO max_id FROM Events;
+    
+    IF max_id > 0 THEN
+        SET @query = CONCAT('ALTER TABLE Events AUTO_INCREMENT = ', max_id + 1);
+    ELSE
+        SET @query = 'ALTER TABLE Events AUTO_INCREMENT = 1';
+    END IF;
+
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;
+
+--Test Data
+INSERT INTO `bettors` (`BettorsID`, `Username`, `Password`, `Balance`, `Email`, `JoinDate`, `IsActive`, `Role`) 
+VALUES
+(1, 'user', '$2a$11$I.Gnk1dp4kAbKOo/dGQmNOGjYRztXlsucCUfOEGj8bO3HPMJTNPlW', 1000, 'user@example.com', '2024-10-11', 1, 'User'),
+(2, 'admin', '$2a$11$c4tTxbYTHA32sFdD10sXROi7kzm8RxdrWR7rklW/DDPPn8fHwoonS', 0, 'admin@example.com', '2024-10-11', 1, 'Admin'),
+(3, 'organizer', '$2a$11$SRtmBVKRj77nSkskpEh7DORdiznx2BtWG3dlMN5S3oykS2PDocvv.', 0, 'organizer@example.com', '2021-12-01', 1, 'Organizer');
 
 INSERT INTO `Events` (`EventName`, `EventDate`, `Category`, `Location`) VALUES
 ('Football Match', '2023-05-10', 'Sports', 'Stadium A'),
