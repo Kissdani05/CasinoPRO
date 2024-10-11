@@ -48,88 +48,11 @@ namespace CasinoPRO
         {
             InitializeComponent();
 
-            MySqlConnection conn = null;
-            int bettorID = 0;
-            string userName = null;
-            double userBalance = 0;  // Store the fetched balance
-            string userEmail = null;
-            DateTime joinDate = DateTime.MinValue;
-            bool isActive = false;
-            string role = null;
-            string loggedInUsername = SessionManager.LoggedInUsername;
+            //Loading users
+            LoadUsersFromDatabase();
 
-            try
-            {
-                DatabaseConnection dbContext = new DatabaseConnection();
-                conn = dbContext.OpenConnection();
-
-                if (conn != null && conn.State == System.Data.ConnectionState.Open)
-                {
-                    // Query to fetch username, email, balance, and other details
-                    string query = "SELECT BettorsID, Username, Balance, Email, JoinDate, IsActive, Role FROM Bettors";
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
-
-                    // Execute the query and read data
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            bettorID = Convert.ToInt32(reader["BettorsID"]);
-                            userName = reader["Username"].ToString();
-                            userBalance = Convert.ToDouble(reader["Balance"]);  // Get balance from DB
-                            userEmail = reader["Email"].ToString();
-
-                            // Handle the JoinDate conversion, check for DBNull
-                            if (!reader.IsDBNull(reader.GetOrdinal("JoinDate")))
-                            {
-                                joinDate = Convert.ToDateTime(reader["JoinDate"]);
-                            }
-                            else
-                            {
-                                joinDate = DateTime.MinValue; // Default value if JoinDate is null
-                            }
-
-                            isActive = Convert.ToBoolean(reader["IsActive"]);
-                            role = reader["Role"].ToString();
-
-                            // Add profile to the collection
-                            Profiles.Add(new Profile
-                            {
-                                Id = bettorID,
-                                Name = userName,
-                                Balance = userBalance,
-                                Email = userEmail,
-                                JoinDate = joinDate,
-                                IsActive = isActive,
-                                Role = role
-                            });
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error fetching user data: " + ex.Message);
-            }
-            finally
-            {
-                if (conn != null && conn.State == System.Data.ConnectionState.Open)
-                {
-                    conn.Close();
-                }
-            }
-        
-
-        // Profilok listájának létrehozása
-        //Profiles = new ObservableCollection<Profile>{};
-
-        //new Profile { Id = 1, Name = "John Doe", Balance = 100.50m, Email = "john@example.com", JoinDate = DateTime.Now.AddYears(-2), IsActive = true, Role = "Admin" },
-        //new Profile { Id = 2, Name = "Jane Smith", Balance = 50.75m, Email = "jane@example.com", JoinDate = DateTime.Now.AddYears(-1), IsActive = true, Role = "User" },
-        //new Profile { Id = 3, Name = "Mark Lee", Balance = 75.00m, Email = "mark@example.com", JoinDate = DateTime.Now.AddMonths(-6), IsActive = false, Role = "User" }
-
-        // Sportok és fogadások listájának létrehozása
-        Sports = new ObservableCollection<Sport>
+            // Sportok és fogadások listájának létrehozása
+            Sports = new ObservableCollection<Sport>
             {
                 new Sport("Foci")
                 {
@@ -169,6 +92,149 @@ namespace CasinoPRO
             DataContext = this;
         }
 
+
+        public void LoadUsersFromDatabase() 
+        {
+            MySqlConnection conn = null;
+            int bettorID = 0;
+            string userName = null;
+            double userBalance = 0;  // Store the fetched balance
+            string userEmail = null;
+            DateTime joinDate = DateTime.MinValue;
+            bool isActive = false;
+            string role = null;
+            string loggedInUsername = SessionManager.LoggedInUsername; // Logged in username
+            Profiles = new();
+
+            try
+            {
+                // Initialize database connection
+                DatabaseConnection dbContext = new DatabaseConnection();
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Query to fetch user information
+                    string query = "SELECT BettorsID, Username, Balance, Email, IsActive, JoinDate, Role FROM Bettors";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                    // Execute query and read data
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            bettorID = Convert.ToInt32(reader["BettorsID"]);
+                            userName = reader["Username"].ToString();
+                            userBalance = Convert.ToDouble(reader["Balance"]);  // Fetch balance from DB
+                            userEmail = reader["Email"].ToString();
+                            if (!reader.IsDBNull(reader.GetOrdinal("JoinDate")))
+                            {
+                                try
+                                {
+                                    joinDate = Convert.ToDateTime(reader["JoinDate"]);
+                                }
+                                catch (Exception innerEx)
+                                {
+                                    // Log the actual JoinDate value for debugging
+                                    string rawJoinDate = reader["JoinDate"].ToString();
+                                    MessageBox.Show($"Error parsing JoinDate: {rawJoinDate}. Exception: {innerEx.Message}");
+
+                                    // Use TryParse for manual parsing as a fallback
+                                    if (DateTime.TryParse(rawJoinDate, out DateTime parsedDate))
+                                    {
+                                        joinDate = parsedDate;
+                                    }
+                                    else
+                                    {
+                                        joinDate = DateTime.MinValue; // Fallback to a default value
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                joinDate = DateTime.MinValue; // Default if JoinDate is null
+                            }
+                            isActive = Convert.ToBoolean(reader["IsActive"]);
+                            role = reader["Role"].ToString();
+
+                            // Add the profile to the Profiles collection
+                            Profiles.Add(new Profile
+                            {
+                                Id = bettorID,
+                                Name = userName,
+                                Balance = userBalance,
+                                Email = userEmail,
+                                JoinDate = joinDate,
+                                IsActive = isActive,
+                                Role = role
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Catch and display any general errors during fetching
+                MessageBox.Show("Error fetching user data: " + ex.Message);
+            }
+            finally
+            {
+                // Ensure the connection is closed after use
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+        private void SaveUser_Click()
+        {
+            int bettorID = 0;
+            string userName = null;
+            double userBalance = 0;  // Store the fetched balance
+            string userEmail = null;
+            bool isActive = false;
+            string role = null;
+            string loggedInUsername = SessionManager.LoggedInUsername; // Logged in username
+            try
+            {
+                DatabaseConnection dbContext = new DatabaseConnection();
+                MySqlConnection conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Update the username and email in the database
+                    string query = "UPDATE Bettors SET Username = @userName, Email = @newEmail, UserBalance = @userBalance, IsActive = @isActive, Role = @role";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@userName", userName);
+                    cmd.Parameters.AddWithValue("@newEmail", userEmail);
+                    cmd.Parameters.AddWithValue("@oldUsername", SessionManager.LoggedInUsername);
+                    cmd.ExecuteNonQuery();
+
+                    // Update SessionManager with the new username
+                    SessionManager.LoggedInUsername = userName;
+
+                    // Refresh user balance or other data if needed
+
+
+                    // Update the dynamically generated username label (TextBlock)
+
+                }
+
+                dbContext.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating user data: " + ex.Message);
+            }
+
+        }
+
+        private void DeleteUser_Click(object sender,RoutedEventArgs e)
+        {
+
+        }
         // Profilok gomb kezelése
         private void Profilok_Click(object sender, RoutedEventArgs e)
         {

@@ -46,7 +46,20 @@
             </StackPanel>
 
             <!-- Adatok -->
-            <ItemsControl Grid.Row="1" ItemsSource="{Binding Profiles}">
+
+            <!--<DataGrid x:Name="ProfileDataGrid" AutoGenerateColumns="False" ItemsSource="{Binding Profiles}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100"/>
+                    <DataGridTextColumn Header="Balance" Binding="{Binding Balance}" Width="100"/>
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                    <DataGridTextColumn Header="Join Date" Binding="{Binding JoinDate, StringFormat=\{0:dd-MM-yyyy\}}" Width="150"/>
+                    <DataGridTextColumn Header="Is Active" Binding="{Binding IsActive}" Width="100"/>
+                    <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>-->
+
+            <ItemsControl x:Name="asd" Grid.Row="1" ItemsSource="{Binding Profiles}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="10">
@@ -59,7 +72,7 @@
                             <TextBox Text="{Binding Role}" Width="100" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 
                             <Button Content="Mentés" Width="75" Margin="5" VerticalAlignment="Center"/>
-                            <Button Content="Törlés" Width="75" Margin="5" VerticalAlignment="Center"/>
+                            <Button Content="Törlés" Width="75" Margin="5" VerticalAlignment="Center" Click="DeleteUser_Click"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

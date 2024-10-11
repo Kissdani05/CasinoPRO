@@ -81,7 +81,6 @@ namespace CasinoPRO
                         {
                             // Store the balance in UserBalance
                             UserBalance = Convert.ToDouble(reader["Balance"]);
-                            MessageBox.Show(UserBalance.ToString());
                         }
                     }
                 }
@@ -148,6 +147,7 @@ namespace CasinoPRO
         {
             bool isRegistered = false;
             MySqlConnection conn = null;
+            DateTime joinDate = DateTime.Now;
 
             try
             {
@@ -155,11 +155,12 @@ namespace CasinoPRO
 
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    string query = "INSERT INTO Bettors (Username, Email, Password, IsActive) VALUES (@username, @Email, @Password, 1)";
+                    string query = "INSERT INTO Bettors (Username, Email, Password, IsActive, JoinDate) VALUES (@username, @Email, @Password, 1, @joinDate)";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@username", username);
                     cmd.Parameters.AddWithValue("@Email", email);
                     cmd.Parameters.AddWithValue("@Password", BCrypt.Net.BCrypt.HashPassword(password));
+                    cmd.Parameters.AddWithValue("@joinDate", joinDate);
 
                     int result = cmd.ExecuteNonQuery();
                     isRegistered = result > 0;
