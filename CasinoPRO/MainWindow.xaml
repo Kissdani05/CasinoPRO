@@ -94,46 +94,20 @@
 
                 <!-- Foci mérkőzés fogadási opciók -->
             </StackPanel>
-            <StackPanel x:Name="OptionalBets" Orientation="Vertical" Visibility="Visible" Grid.Row="1" Margin="10">
-                <TextBlock Text="Fogadási lehetőségek" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
-
-                <!-- Foci meccsek fogadási lehetőségei -->
-                <StackPanel Orientation="Vertical" Margin="0,0,0,10">
-                    <TextBlock Text="Real Madrid vs Barcelona" FontSize="16" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
-                        <Button Content="Real Madrid nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Barcelona nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
-                    <TextBlock Text="Liverpool vs Manchester United" FontSize="16" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
-                        <Button Content="Liverpool nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Manchester United nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
-                    <TextBlock Text="Juventus vs AC Milan" FontSize="16" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
-                        <Button Content="Juventus nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="AC Milan nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Orientation="Vertical" Margin="0,0,0,20">
-                    <TextBlock Text="Bayern München vs Borussia Dortmund" FontSize="16" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
-                        <Button Content="Bayern München nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Borussia Dortmund nyer" Width="150" Margin="5" Click="BetOption_Click"/>
-                        <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
-                    </StackPanel>
-                </StackPanel>
-            </StackPanel>
+            <ItemsControl x:Name="OptionalBets"  Grid.Row="1" ItemsSource="{Binding Matches}">
+                <ItemsControl.ItemTemplate >
+                    <DataTemplate>
+                        <StackPanel  Orientation="Vertical" Margin="10">
+                            <TextBlock Text="{Binding MatchTitle}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                                <Button Content="{Binding Option1}" Width="150" Margin="5" Click="BetOption_Click"/>
+                                <Button Content="{Binding Option2}" Width="150" Margin="5" Click="BetOption_Click"/>
+                                <Button Content="Döntetlen" Width="150" Margin="5" Click="BetOption_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!-- Jobb oldal: Élő fogadási lehetőségek -->
             <StackPanel Name="LiveBetsPanel" Grid.Column="1" Margin="20" Grid.Row="1">
