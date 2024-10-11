@@ -18,12 +18,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Button Grid.Row="0" Content="Profilok" Height="50" Margin="20" VerticalAlignment="Center" Click="Profilok_Click"/>
-            <Button Grid.Row="1" Content="Sportok" Height="50" Margin="20" VerticalAlignment="Center" Click="Sportok_Click"/>
-            <Button Grid.Row="2" Content="Kijelentkezés" Height="50" Margin="20" VerticalAlignment="Center" Click="Button_Click"/>
+            <Button Grid.Row="1" Content="Kijelentkezés" Height="50" Margin="20" VerticalAlignment="Center" Click="Button_Click"/>
         </Grid>
 
         <!-- Profil lista a jobb oldalon -->
@@ -63,54 +61,6 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </Grid>
-
-        <!-- Sportok és Fogadások megjelenítése -->
-        <Grid Grid.Column="1" Background="White" x:Name="SportsGrid" Visibility="Collapsed">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- Sportok kiválasztása -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-                <ComboBox ItemsSource="{Binding Sports}" SelectedItem="{Binding SelectedSport}" DisplayMemberPath="Name" Width="200" SelectionChanged="SportSelectionChanged"/>
-                <!-- Új sport hozzáadása gomb -->
-                <Button Content="Új sport hozzáadása" Width="150" Margin="10" Click="AddNewSport_Click"/>
-            </StackPanel>
-
-            <!-- Oszlop címek (Hazai vs Vendég, Hazai Odds, stb.) -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
-                <TextBlock Text="Hazai vs Vendég" Width="200" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Hazai Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Vendég Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Döntetlen Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Width="150"/>
-            </StackPanel>
-
-            <!-- Fogadások listája -->
-            <ScrollViewer Grid.Row="2">
-                <ItemsControl ItemsSource="{Binding SelectedSport.Bets}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="10">
-                                <TextBox Text="{Binding Match}" Width="200" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding HomeOdds}" Width="100" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding AwayOdds}" Width="100" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding DrawOdds}" Width="100" VerticalAlignment="Center"/>
-
-                                <!-- Save and Delete buttons -->
-                                <Button Content="Mentés" Width="75" Margin="5" VerticalAlignment="Center" Click="SaveBet_Click"/>
-                                <Button Content="Törlés" Width="75" Margin="5" VerticalAlignment="Center" Click="DeleteBet_Click"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-
-            <Button Grid.Row="3" Content="Új fogadás hozzáadása" Width="150" Margin="10" VerticalAlignment="Center" Click="AddNewBet_Click"/>
         </Grid>
     </Grid>
 </Window>
