@@ -242,7 +242,52 @@ namespace CasinoPRO
 
         private void DeleteUser_Click(object sender,RoutedEventArgs e)
         {
+            Button SaveBtn = sender as Button;
+            StackPanel stk = SaveBtn.Parent as StackPanel;
+            TextBlock IdTextB = stk.Children[0] as TextBlock;
+            int bettorID = Convert.ToInt32(IdTextB.Text);
 
+            MySqlConnection conn = null;
+            try
+            {
+                // Initialize database connection
+                DatabaseConnection dbContext = new DatabaseConnection();
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    // Query to fetch user information
+                    string query = "DELETE FROM Bettors Where BettorsID = @id";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@id", bettorID);
+
+                    cmd.ExecuteNonQuery();
+
+                    Profile profileToRemove = Profiles.FirstOrDefault(x => x.Id == bettorID);
+
+                    if (profileToRemove != null)
+                    {
+                        Profiles.Remove(profileToRemove);
+                    }
+
+                    MessageBox.Show("User deleted successfully!");
+                    // Execute query and read data
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // Catch and display any general errors during fetching
+                MessageBox.Show("Error fetching user data: " + ex.Message);
+            }
+            finally
+            {
+                // Ensure the connection is closed after use
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    conn.Close();
+                }
+            }
         }
         // Profilok gomb kezelése
         private void Profilok_Click(object sender, RoutedEventArgs e)
