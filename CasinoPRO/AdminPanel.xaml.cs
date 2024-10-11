@@ -4,44 +4,23 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using ZstdSharp.Unsafe;
+using CasinoPRO.Models;
 
 namespace CasinoPRO
 {
     public partial class AdminPanel : Window
     {
-        public class Profile
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public double Balance { get; set; }
-            public string Email { get; set; }
-            public DateTime JoinDate { get; set; }
-            public bool IsActive { get; set; }
-            public string Role { get; set; }
-        }
+        //public class Profile
+        //{
+        //    public int Id { get; set; }
+        //    public string Name { get; set; }
+        //    public double Balance { get; set; }
+        //    public string Email { get; set; }
+        //    public DateTime JoinDate { get; set; }
+        //    public bool IsActive { get; set; }
+        //    public string Role { get; set; }
+        //}
 
-        public class Bet
-        {
-            public string Match { get; set; }
-            public decimal HomeOdds { get; set; }
-            public decimal AwayOdds { get; set; }
-            public decimal DrawOdds { get; set; }
-        }
-
-        public class Sport
-        {
-            public string Name { get; set; }
-            public ObservableCollection<Bet> Bets { get; set; }
-
-            public Sport(string name)
-            {
-                Name = name;
-                Bets = new ObservableCollection<Bet>();
-            }
-        }
-
-        public ObservableCollection<Sport> Sports { get; set; }
-        public Sport SelectedSport { get; set; }
         public ObservableCollection<Profile> Profiles { get; set; }
 
         public AdminPanel()
@@ -294,71 +273,6 @@ namespace CasinoPRO
         {
             SportsGrid.Visibility = Visibility.Collapsed;
             ProfileGrid.Visibility = Visibility.Visible;
-        }
-
-        // Sportok gomb kezelése
-        private void Sportok_Click(object sender, RoutedEventArgs e)
-        {
-            ProfileGrid.Visibility = Visibility.Collapsed;
-            SportsGrid.Visibility = Visibility.Visible;
-        }
-
-        // Kijelentkezés
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        // Új sport hozzáadása
-        private void AddNewSport_Click(object sender, RoutedEventArgs e)
-        {
-            string sportName = Microsoft.VisualBasic.Interaction.InputBox("Add meg az új sport nevét:", "Új sport hozzáadása", "Új sport");
-
-            if (!string.IsNullOrWhiteSpace(sportName))
-            {
-                var newSport = new Sport(sportName);
-                Sports.Add(newSport);
-                SelectedSport = newSport;
-            }
-        }
-
-        // Új fogadás hozzáadása a kiválasztott sporthoz
-        private void AddNewBet_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedSport != null)
-            {
-                SelectedSport.Bets.Add(new Bet { Match = "Új valaki vs valaki", HomeOdds = 1.00m, AwayOdds = 2.00m, DrawOdds = 3.00m });
-            }
-        }
-
-        // Sport kiválasztása
-        private void SportSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var comboBox = sender as ComboBox;
-            var selectedSport = comboBox.SelectedItem as Sport;
-
-            if (selectedSport != null)
-            {
-                SelectedSport = selectedSport;
-            }
-        }
-
-        // Fogadás mentése
-        private void SaveBet_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("A fogadás mentve!");
-        }
-
-        // Fogadás törlése
-        private void DeleteBet_Click(object sender, RoutedEventArgs e)
-        {
-            var button = sender as Button;
-            var bet = button.DataContext as Bet;
-
-            if (bet != null && SelectedSport != null)
-            {
-                SelectedSport.Bets.Remove(bet);
-            }
         }
     }
 }
