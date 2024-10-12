@@ -45,23 +45,25 @@
 
             <!-- Oszlop címek (Hazai vs Vendég, Hazai Odds, stb.) -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10">
-                <TextBlock Text="Hazai vs Vendég" Width="200" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Hazai Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Vendég Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="Döntetlen Odds" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Esemény Azonosítója" Width="200" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Esemény Neve" Width="200" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Dátum" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Kategória" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="Helyszín" Width="100" FontWeight="Bold" VerticalAlignment="Center"/>
                 <TextBlock Width="150"/>
             </StackPanel>
 
             <!-- Fogadások listája -->
             <ScrollViewer Grid.Row="2">
-                <ItemsControl ItemsSource="{Binding SelectedSport.Bets}">
+                <ItemsControl ItemsSource="{Binding Match}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="10">
-                                <TextBox Text="{Binding Match}" Width="200" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding HomeOdds}" Width="100" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding AwayOdds}" Width="100" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding DrawOdds}" Width="100" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding EventId}" Width="200" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding EventName}" Width="200" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding EventDate}" Width="100" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding Category}" Width="100" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding Location}" Width="100" VerticalAlignment="Center"/>
 
                                 <!-- Save and Delete buttons -->
                                 <Button Content="Mentés" Width="75" Margin="5" VerticalAlignment="Center" Click="SaveBet_Click"/>
