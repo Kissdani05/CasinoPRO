@@ -251,9 +251,6 @@ namespace CasinoPRO
             ProfileGrid.Visibility = Visibility.Visible;
         }
 
-        // Sportok gomb kezelése
-        
-
         // Kijelentkezés
         private void Button_Click(object sender, RoutedEventArgs e)
         {

@@ -13,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-
+using CasinoPRO.Models;
 namespace CasinoPRO
 {
     /// <summary>
@@ -21,37 +21,6 @@ namespace CasinoPRO
     /// </summary>
     public partial class OrganizerPage : Window
     {
-        public class Profile
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public double Balance { get; set; }
-            public string Email { get; set; }
-            public DateTime JoinDate { get; set; }
-            public bool IsActive { get; set; }
-            public string Role { get; set; }
-        }
-
-        public class Bet
-        {
-            public string Match { get; set; }
-            public decimal HomeOdds { get; set; }
-            public decimal AwayOdds { get; set; }
-            public decimal DrawOdds { get; set; }
-        }
-
-        public class Sport
-        {
-            public string Name { get; set; }
-            public ObservableCollection<Bet> Bets { get; set; }
-
-            public Sport(string name)
-            {
-                Name = name;
-                Bets = new ObservableCollection<Bet>();
-            }
-        }
-
         public ObservableCollection<Sport> Sports { get; set; }
         public Sport SelectedSport { get; set; }
         public ObservableCollection<Profile> Profiles { get; set; }
@@ -59,40 +28,13 @@ namespace CasinoPRO
         public OrganizerPage()
         {
             InitializeComponent();
-            Sports = new ObservableCollection<Sport>
-            {
-                new Sport("Foci")
-                {
-                    Bets = new ObservableCollection<Bet>
-                    {
-                        new Bet { Match = "Csapat A vs Csapat B", HomeOdds = 1.50m, AwayOdds = 2.50m, DrawOdds = 3.00m },
-                        new Bet { Match = "Csapat C vs Csapat D", HomeOdds = 1.75m, AwayOdds = 2.00m, DrawOdds = 3.50m }
-                    }
-                },
-                new Sport("Kosárlabda")
-                {
-                    Bets = new ObservableCollection<Bet>
-                    {
-                        new Bet { Match = "Team A vs Team B", HomeOdds = 1.20m, AwayOdds = 3.50m, DrawOdds = 2.10m }
-                    }
-                },
-                new Sport("Tenisz")
-                {
-                    Bets = new ObservableCollection<Bet>
-                    {
-                        new Bet { Match = "Player A vs Player B", HomeOdds = 1.30m, AwayOdds = 3.10m, DrawOdds = 0.00m }
-                    }
-                },
-                new Sport("Hoki")
-                {
-                    Bets = new ObservableCollection<Bet>
-                    {
-                        new Bet { Match = "Team X vs Team Y", HomeOdds = 2.50m, AwayOdds = 1.80m, DrawOdds = 3.20m }
-                    }
-                }
-            };
-            SelectedSport = Sports[0];
             DataContext = this;
+
+        }
+
+        public void LoadBets()
+        {
+
         }
         private void Sportok_Click(object sender, RoutedEventArgs e)
         {
