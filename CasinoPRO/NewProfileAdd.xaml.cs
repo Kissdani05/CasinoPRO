@@ -84,7 +84,6 @@ namespace CasinoPRO
                 }
                 NewProfile = new Profile
                 {
-
                     Id = bettorId,
                     Name = userName,
                     Balance = userBalance,

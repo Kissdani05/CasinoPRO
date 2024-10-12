@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using CasinoPRO.Models;
 using System.Text.RegularExpressions;
+using System.IO;
 namespace CasinoPRO
 {
     /// <summary>
@@ -30,6 +31,7 @@ namespace CasinoPRO
         public OrganizerPage()
         {
             InitializeComponent();
+            Match = new ObservableCollection<Matches>();
             DataContext = this;
             LoadEvents();
 
@@ -147,9 +149,22 @@ namespace CasinoPRO
         // Új fogadás hozzáadása a kiválasztott sporthoz
         private void AddNewBet_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedSport != null)
+            NewMatch newMatch = new NewMatch();
+            newMatch.Show();
+
+            newMatch.Closed += OnClosing;
+        }
+
+        public void OnClosing(object sender, EventArgs e)
+        {
+            // Add the newly created profile to the ObservableCollection
+            if (sender is NewMatch newMatchWindow)
             {
-                SelectedSport.Bets.Add(new Bet { Match = "Új valaki vs valaki", HomeOdds = 1.00m, AwayOdds = 2.00m, DrawOdds = 3.00m });
+                var newMatches = newMatchWindow.NewMatches; // Assuming you expose the new profile
+                if (newMatches != null)
+                {
+                    Match.Add(newMatches);
+                }
             }
         }
 
@@ -190,7 +205,7 @@ namespace CasinoPRO
             {
                 if (conn != null && conn.State == System.Data.ConnectionState.Open)
                 {
-                    
+
 
                     string query = "UPDATE Events SET EventName = @eventname, EventDate = @eventdate, Category = @category, Location = @location WHERE EventID = @eventid";
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -245,7 +260,7 @@ namespace CasinoPRO
                     deleteCmd.Parameters.AddWithValue("@id", eventID);
                     deleteCmd.ExecuteNonQuery();
 
-                    string resetProcedureQuery = "CALL reset_auto_increment_bettors();";
+                    string resetProcedureQuery = "CALL reset_auto_increment_events();";
                     MySqlCommand resetCmd = new MySqlCommand(resetProcedureQuery, conn);
                     resetCmd.ExecuteNonQuery();
 
