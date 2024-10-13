@@ -23,6 +23,8 @@ namespace CasinoPRO
         private double balance = 0;
         private bool isLoggedIn = false;
         TextBlock usernameTextBlock;
+        public string BetName;
+
         public ICommand FinalizeBetCommand { get; set; }
         private List<string> finalizedBets = new List<string>();
         public ObservableCollection<BetCartItem> Bets { get; set; }
@@ -519,10 +521,12 @@ namespace CasinoPRO
             else
             {
                 var button = sender as Button;
-                if (button != null)
+                var stk = button.Parent as StackPanel;
+                var betNameTextBlock = stk.Children[0] as TextBlock;
+                if (betNameTextBlock != null)
                 {
-                    string teamName = button.Content.ToString();
-                    OnTeamSelected(teamName);
+                    BetName = betNameTextBlock.Text; // Assign value to the global variable
+                    OnTeamSelected(BetName); // Example event that might use BetName
                 }
             }
         }
@@ -550,12 +554,11 @@ namespace CasinoPRO
         // Fogadás véglegesítése
         private void FinalizeBet_CLick(object sender, RoutedEventArgs e)
         {
-
             if (sender is Button button && button.DataContext is BetCartItem betItem)
             {
                 if (balance >= betItem.BetAmount)
                 {
-                    balance -= betItem.BetAmount; 
+                    balance -= betItem.BetAmount;
                     BalanceTxt.Content = $"{balance} HUF";
                     try
                     {
@@ -565,25 +568,109 @@ namespace CasinoPRO
 
                         if (conn != null && conn.State == System.Data.ConnectionState.Open)
                         {
+                            // Update Bettor's balance
                             string query = "UPDATE Bettors SET Balance = @balance WHERE Username = @username";
                             MySqlCommand cmd = new MySqlCommand(query, conn);
                             cmd.Parameters.AddWithValue("@balance", balance);
                             cmd.Parameters.AddWithValue("@username", loggedInUsername);
                             cmd.ExecuteNonQuery();
+
+                            // Call FinalizeBets method to process the bet
+                            FinalizeBets(betItem.BetAmount);
+
+                            // Show success message and remove the bet item from Bets
                             MessageBox.Show($"Sikeres fogadás: {betItem.BetAmount} HUF, egyenlege frissítve.");
                             Bets.Remove(betItem);
                         }
+
                         dbContext.CloseConnection();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Hiba történt a fogadás során: " + ex.Message);
+                        MessageBox.Show("Hiba történt a fogadás során: " + ex.ToString());
                     }
                 }
                 else
                 {
                     MessageBox.Show("Nincs elég egyenleged a fogadásra");
                 }
+            }
+        }
+
+        public void FinalizeBets(double BetAmount)
+        {
+            try
+            {
+                string loggedInUsername = SessionManager.LoggedInUsername;
+                DatabaseConnection dbContext = new DatabaseConnection();
+                MySqlConnection conn = dbContext.OpenConnection();
+
+                #region User Vars
+                DateTime betDate = DateTime.Now;
+                double odds = GetRandomNumber(1.00, 8.00);
+                double Amount = BetAmount;
+                int bettorsId = 0;
+                int eventId = 0;
+                DateTime eventDate = DateTime.MinValue;
+                bool status = false;
+                #endregion
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string selectUserIdQuery = "SELECT BettorsID FROM Bettors WHERE Username = @username";
+                    MySqlCommand selectUserIdCmd = new MySqlCommand(selectUserIdQuery, conn);
+                    selectUserIdCmd.Parameters.AddWithValue("@username", loggedInUsername);
+                    using (MySqlDataReader reader = selectUserIdCmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            bettorsId = Convert.ToInt32(reader["BettorsID"]);
+                        }
+                    }
+                    string selectEventIdQuery = "SELECT EventID, EventDate FROM Events WHERE EventName = @eventname";
+                    MySqlCommand selectEventIdCmd = new MySqlCommand(selectEventIdQuery, conn);
+                    if (!string.IsNullOrEmpty(BetName))
+                    {
+                        selectEventIdCmd.Parameters.AddWithValue("@eventname", BetName);
+                    }
+                    else
+                    {
+                        throw new Exception("BetName is not assigned.");
+                    }
+
+                    using (MySqlDataReader eventReader = selectEventIdCmd.ExecuteReader())
+                    {
+                        if (eventReader.Read())
+                        {
+                            eventId = Convert.ToInt32(eventReader["EventID"]);
+                            eventDate = Convert.ToDateTime(eventReader["EventDate"]);
+                        }
+                    }
+
+                    string insertQuery = "INSERT INTO Bets (BetDate, Odds, Amount, BettorsID, EventID, Status) VALUES (@betdate, @odds, @amount, @bettorsid, @eventid, @status)";
+                    MySqlCommand insertCmd = new MySqlCommand(insertQuery, conn);
+                    insertCmd.Parameters.AddWithValue("@betdate", betDate);
+                    insertCmd.Parameters.AddWithValue("@odds", odds);
+                    insertCmd.Parameters.AddWithValue("@amount", Amount);
+                    insertCmd.Parameters.AddWithValue("@bettorsid", bettorsId);
+                    insertCmd.Parameters.AddWithValue("@eventid", eventId);
+                    int comparisonResult = DateTime.Compare(eventDate, DateTime.Now);
+                    if (comparisonResult < 0)
+                    {
+                        status = false;
+                    }
+                    else
+                    {
+                        status = true;
+                    }
+                    insertCmd.Parameters.AddWithValue("@status", status);
+                    insertCmd.ExecuteNonQuery();
+                }
+                dbContext.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Hiba történt a fogadás során: " + ex.ToString());
             }
         }
 
@@ -620,29 +707,73 @@ namespace CasinoPRO
                 };
                 betsPanel.Children.Add(header);
 
-                if (finalizedBets.Count > 0)
+                // Retrieve bets from the database
+                try
                 {
-                    foreach (var bet in finalizedBets)
+                    string loggedInUsername = SessionManager.LoggedInUsername;
+                    DatabaseConnection dbContext = new DatabaseConnection();
+                    MySqlConnection conn = dbContext.OpenConnection();
+
+                    if (conn != null && conn.State == System.Data.ConnectionState.Open)
                     {
-                        TextBlock betText = new TextBlock
+                        // Fetch finalized bets for the logged-in user
+                        string selectBetsQuery = @"
+                    SELECT b.BetDate, b.Odds, b.Amount, e.EventName, b.Status
+                    FROM Bets b
+                    JOIN Bettors bt ON b.BettorsID = bt.BettorsID
+                    JOIN Events e ON b.EventID = e.EventID
+                    WHERE bt.Username = @username";
+
+                        MySqlCommand cmd = new MySqlCommand(selectBetsQuery, conn);
+                        cmd.Parameters.AddWithValue("@username", loggedInUsername);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            Text = bet,
-                            Margin = new Thickness(0, 5, 0, 35)
-                        };
-                        betsPanel.Children.Add(betText);
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    DateTime betDate = reader.GetDateTime("BetDate");
+                                    double odds = reader.GetDouble("Odds");
+                                    double amount = reader.GetDouble("Amount");
+                                    string eventName = reader.GetString("EventName");
+                                    bool status = reader.GetBoolean("Status");
+
+                                    // Format bet details
+                                    string betDetails = $"Dátum: {betDate}, Esemény: {eventName}, Odds: {odds}, Összeg: {amount} HUF, " +
+                                                        $"Státusz: {(status ? "Aktív" : "Lejárt")}";
+
+                                    // Add the bet details to the panel
+                                    TextBlock betText = new TextBlock
+                                    {
+                                        Text = betDetails,
+                                        Margin = new Thickness(0, 5, 0, 35)
+                                    };
+                                    betsPanel.Children.Add(betText);
+                                }
+                            }
+                            else
+                            {
+                                // No finalized bets
+                                TextBlock noBetsText = new TextBlock
+                                {
+                                    Text = "Még nincs véglegesített fogadás.",
+                                    FontStyle = FontStyles.Italic,
+                                    Margin = new Thickness(0, 5, 0, 5)
+                                };
+                                betsPanel.Children.Add(noBetsText);
+                            }
+                        }
                     }
+
+                    dbContext.CloseConnection();
                 }
-                else
+                catch (Exception ex)
                 {
-                    TextBlock noBetsText = new TextBlock
-                    {
-                        Text = "Még nincs véglegesített fogadás.",
-                        FontStyle = FontStyles.Italic,
-                        Margin = new Thickness(0, 5, 0, 5)
-                    };
-                    betsPanel.Children.Add(noBetsText);
+                    MessageBox.Show("Hiba történt a fogadások lekérdezése során: " + ex.ToString());
                 }
 
+                // Add back button
                 Button backButton = new Button
                 {
                     Content = "Vissza",
@@ -876,6 +1007,12 @@ namespace CasinoPRO
         {
             OrganizerPage organizerPage = new OrganizerPage();
             organizerPage.Show();
+        }
+
+        public double GetRandomNumber(double minimum, double maximum)
+        {
+            Random random = new Random();
+            return random.NextDouble() * (maximum - minimum) + minimum;
         }
     }
 }

@@ -130,6 +130,8 @@ namespace CasinoPRO
         // Kijelentkezés
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            MainWindow mainwindow = new MainWindow();
+            mainwindow.Show();
             this.Close();
         }
 

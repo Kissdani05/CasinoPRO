@@ -106,6 +106,51 @@ namespace CasinoPRO
 
             return isAdmin;
         }
+        public bool ValidateOrganizer(string username)
+        {
+            bool isOrganizer = false;
+
+            MySqlConnection conn = null;
+
+            try
+            {
+                conn = dbContext.OpenConnection();
+
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    string query = "SELECT Role FROM Bettors WHERE Username = @username AND IsActive = 1";
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+
+                    string role = null;
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            role = reader["Role"].ToString();
+                        }
+                    }
+
+                    if (role.ToLower() == "organizer")
+                    {
+                        isOrganizer = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error during login validation: " + ex.Message);
+            }
+            finally
+            {
+                if (conn != null && conn.State == System.Data.ConnectionState.Open)
+                {
+                    dbContext.CloseConnection();
+                }
+            }
+
+            return isOrganizer;
+        }
 
         private void LoadUserBalance(string username)
         {
@@ -145,6 +190,7 @@ namespace CasinoPRO
             // Call ValidateLogin to check if the login is valid
             bool isValid = ValidateLogin(username, password);
             bool isAdmin = ValidateAdmin(username);
+            bool isOrganizer = ValidateOrganizer(username);
 
             if (isValid)
             {
@@ -155,6 +201,23 @@ namespace CasinoPRO
 
                     AdminPanel adminPanel = new AdminPanel();
                     adminPanel.Show();
+
+                    var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                    if (mainWindow != null)
+                    {
+                        mainWindow.Close();
+                    }
+
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else if (isOrganizer)
+                {
+                    SessionManager.LoggedInUsername = username;
+                    MessageBox.Show("Login successful!");
+
+                    OrganizerPage organizerPage = new OrganizerPage();
+                    organizerPage.Show();
 
                     var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
                     if (mainWindow != null)
