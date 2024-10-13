@@ -1003,11 +1003,7 @@ namespace CasinoPRO
                 VerticalAlignment = VerticalAlignment.Center
             };
         }
-        private void Organizer_Click(object sender, RoutedEventArgs e)
-        {
-            OrganizerPage organizerPage = new OrganizerPage();
-            organizerPage.Show();
-        }
+        
 
         public double GetRandomNumber(double minimum, double maximum)
         {
