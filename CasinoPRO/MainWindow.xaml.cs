@@ -1008,7 +1008,9 @@ namespace CasinoPRO
         public double GetRandomNumber(double minimum, double maximum)
         {
             Random random = new Random();
-            return random.NextDouble() * (maximum - minimum) + minimum;
+            double result = random.NextDouble() * (maximum - minimum) + minimum;
+            double roundedResult = Math.Round(result, 1);
+            return roundedResult;
         }
     }
 }
